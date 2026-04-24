@@ -5,10 +5,6 @@ interface SitterGridProps {
   sitters: SitterWithProfile[]
 }
 
-/**
- * Renders the responsive sitter grid, or a friendly empty state
- * when no sitters are returned from Supabase.
- */
 export function SitterGrid({ sitters }: SitterGridProps) {
   if (sitters.length === 0) {
     return (

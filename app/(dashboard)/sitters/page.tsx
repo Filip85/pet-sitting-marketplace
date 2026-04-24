@@ -10,11 +10,6 @@ export const metadata: Metadata = {
   description: 'Find trusted pet sitters near you.',
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-// Without generated DB types, Supabase infers joined relations as arrays.
-// At runtime the FK is many-to-one so it is always a single object —
-// we normalise defensively so the code never breaks either way.
-
 interface RawSitterRow {
   id: string
   profile_id: string
