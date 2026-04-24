@@ -1,0 +1,1 @@
+export type { Role, PetType, BookingStatus, Profile, SitterProfile, SitterWithProfile, Pet, Booking } from '../lib/supabase/types'
