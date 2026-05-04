@@ -4,27 +4,25 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { supabase } from '../../lib/supabase/client'
 import { loginSchema, LoginForm as LoginFormType } from '../../lib/validations/auth'
 import { Button } from '../ui/Button'
 import { Form } from '../ui/Form'
+import { login } from '../../actions/login'
 
 export const LoginForm = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormType>({
     resolver: zodResolver(loginSchema),
   })
 
-  const navigate = async (destination: string) => {
+  const navigate = (destination: string) => {
     try {
-      console.log('Attempting router.push to:', destination)
-      await router.push(destination)
-      console.log('router.push succeeded')
+      router.push(destination)
     } catch (err) {
-      console.log('router.push failed, falling back to window.location.href:', destination)
       window.location.href = destination
     }
   }
@@ -32,54 +30,14 @@ export const LoginForm = () => {
   const onSubmit = async (data: LoginFormType) => {
     setLoading(true)
     setError(null)
-    console.log('Login form submitted with email:', data.email)
+    const results = await login(data);
 
-    try {
-      console.log('Calling signInWithPassword...')
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      })
-
-      console.log('signInWithPassword response:', { authData: authData ? 'user' : null, authError })
-
-      if (authError) {
-        console.log('Auth error:', authError.message)
-        setError(authError.message)
-        return
-      }
-
-      if (!authData.user) {
-        console.log('No user returned from signInWithPassword')
-        setError('Login failed. Please try again.')
-        return
-      }
-
-      console.log('User authenticated:', authData.user.id)
-      console.log('Fetching profile...')
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', authData.user.id)
-        .single()
-
-      console.log('Profile response:', { profile, profileError })
-
-      if (profileError || !profile) {
-        console.log('Profile error:', profileError?.message)
-        setError('Unable to load user profile.')
-        return
-      }
-
-      const destination = profile.role === 'OWNER' ? '/owner' : profile.role === 'SITTER' ? '/sitter' : '/sitters'
-      console.log('Login successful, navigating to:', destination)
-      await navigate(destination)
-    } catch (err) {
-      console.log('Unexpected error:', err)
-      setError('Login failed. Please try again.')
-    } finally {
-      setLoading(false)
+    if (results.error) {
+      setError(results.error)
+    } else if (results.destination) {
+      navigate(results.destination)
+    } else {
+      setError('An unexpected error occurred')
     }
   }
 

@@ -61,28 +61,23 @@ export default function HomePage() {
 
       <main className="flex-1 pt-16">
 
-        {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section className="bg-gradient-to-b from-blue-50 to-white">
           <div className="max-w-4xl mx-auto px-4 pt-24 pb-20 text-center">
 
-            {/* Badge */}
             <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full mb-8">
               Pet-sitting marketplace
             </span>
 
-            {/* Headline */}
             <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-6">
               Your pet deserves<br />
               <span className="text-blue-600">the best care.</span>
             </h1>
 
-            {/* Sub-headline */}
             <p className="text-lg text-gray-500 max-w-xl mx-auto mb-10 leading-relaxed">
               Connect with trusted local sitters who treat your pet like their own.
               Simple booking, transparent pricing, total peace of mind.
             </p>
 
-            {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/sitters"
@@ -111,7 +106,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── How it works ─────────────────────────────────────────────── */}
         <section className="bg-white py-24">
           <div className="max-w-6xl mx-auto px-4">
 
@@ -125,7 +119,6 @@ export default function HomePage() {
               </h2>
             </div>
 
-            {/* Steps */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {STEPS.map((step) => (
                 <div key={step.number} className="relative text-center">
@@ -145,7 +138,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Features ─────────────────────────────────────────────────── */}
         <section className="bg-gray-50 py-24">
           <div className="max-w-6xl mx-auto px-4">
 
@@ -181,7 +173,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── CTA Banner ───────────────────────────────────────────────── */}
         <section className="bg-blue-600 py-20">
           <div className="max-w-2xl mx-auto px-4 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">

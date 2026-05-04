@@ -8,14 +8,26 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const cookieStorage = async () => {
   const cookieStore = await cookies()
 
+  console.log(cookieStorage);
+
   return {
     getItem: (key: string) => cookieStore.get(key)?.value ?? null,
+    // setItem / removeItem throw in server components (read-only);
+    // wrapping in try-catch lets server components call getUser() safely.
     setItem: (key: string, value: string) => {
-      cookieStore.set(key, value)
+      try {
+        cookieStore.set(key, value)
+      } catch {
+        // no-op in server components
+      }
       return undefined
     },
     removeItem: (key: string) => {
-      cookieStore.delete(key)
+      try {
+        cookieStore.delete(key)
+      } catch {
+        // no-op in server components
+      }
       return undefined
     },
   }
@@ -30,7 +42,7 @@ export const createServerAuthClient = async () => {
 
   return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: false,
+      persistSession: true,
       storage: await cookieStorage(),
     },
   })
