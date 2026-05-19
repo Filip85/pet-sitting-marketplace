@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createServerSupabaseClient } from '../../../../lib/supabase/server'
+
+import { createServerAuthClient, createAdminClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +27,8 @@ interface SitterDetail {
 
 async function fetchSitter(id: string): Promise<SitterDetail | null> {
   try {
-    const supabase = createServerSupabaseClient()
+
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
       .from('sitter_profiles')
@@ -90,6 +92,25 @@ export default async function SitterProfilePage({
   const sitter = await fetchSitter(id)
 
   if (!sitter) notFound()
+
+
+  // Check if current user is an owner (can request booking)
+  const authClient = await createServerAuthClient()
+  const { data: { user } } = await authClient.auth.getUser()
+
+  let canRequestBooking = false
+  if (user) {
+
+
+    const db = createAdminClient()
+    const { data: profile } = await db
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    canRequestBooking = profile?.role === 'OWNER'
+  }
 
   const { first_name, last_name, city, bio } = sitter.profile
   const fullName = `${first_name} ${last_name}`
@@ -214,12 +235,25 @@ export default async function SitterProfilePage({
           <div className="border-t border-gray-100 mb-6" />
 
           {/* Book CTA */}
-          <Link
-            href={`/sitters/${sitter.profile_id}/book`}
-            className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Request Booking — {formattedPrice} / day
-          </Link>
+          {!user ? (
+            <Link
+              href="/login"
+              className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Log in to request booking — {formattedPrice} / day
+            </Link>
+          ) : canRequestBooking ? (
+            <Link
+              href={`/sitters/${sitter.profile_id}/book`}
+              className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Request Booking — {formattedPrice} / day
+            </Link>
+          ) : (
+            <div className="w-full text-center bg-gray-100 text-gray-500 font-semibold py-3 px-6 rounded-xl text-sm">
+              Only owners can request bookings
+            </div>
+          )}
 
         </div>
       </div>

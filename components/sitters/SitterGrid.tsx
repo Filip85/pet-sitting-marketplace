@@ -1,5 +1,5 @@
 import { SitterCard } from './SitterCard'
-import type { SitterWithProfile } from '../../types'
+import type { SitterWithProfile } from '@/types'
 
 interface SitterGridProps {
   sitters: SitterWithProfile[]

@@ -1,47 +1,30 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { createServerAuthClient } from '@/lib/supabase/server'
-import { loginSchema, LoginForm } from '@/lib/validations/auth'
+import { redirect } from 'next/navigation'
+import { createServerAuthClient, createAdminClient } from '@/lib/supabase/server'
+import { loginSchema, type LoginForm } from '@/lib/validations/auth'
+import { firstZodError } from '@/lib/utils'
 
 export async function login(formData: LoginForm) {
+  const parsed = loginSchema.safeParse(formData)
+  if (!parsed.success) return { error: firstZodError(parsed.error) }
+
   const supabase = await createServerAuthClient()
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data)
 
-  // Validate the form data
-  const result = loginSchema.safeParse(formData)
-  if (!result.success) {
-    return { error: result.error.issues[0].message }
-  }
+  if (error) return { error: error.message }
+  if (!data.user) return { error: 'Login failed' }
 
-  const { email, password } = result.data
-
-  // Sign in the user
-  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (authError) {
-    return { error: authError.message }
-  }
-
-  if (!authData.user) {
-    return { error: 'Login failed' }
-  }
-
-  // Get user profile to determine role
-  const { data: profile, error: profileError } = await supabase
+  // Fetch role to decide where to redirect
+  const admin = createAdminClient()
+  const { data: profile } = await admin
     .from('profiles')
     .select('role')
-    .eq('id', authData.user.id)
+    .eq('id', data.user.id)
     .single()
 
-  if (profileError || !profile) {
-    return { error: 'Failed to get user profile' }
-  }
+  const destination =
+    profile?.role === 'SITTER' ? '/sitter' : '/owner'
 
-  revalidatePath('/', 'layout')
-
-  const destination = profile.role === 'OWNER' ? '/owner' : profile.role === 'SITTER' ? '/sitter' : '/sitters'
-  return { destination }
+  redirect(destination)
 }

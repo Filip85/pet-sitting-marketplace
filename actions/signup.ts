@@ -1,53 +1,32 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { createServerAuthClient, createServerSupabaseClient } from '@/lib/supabase/server'
-import { registerSchema, RegisterForm } from '@/lib/validations/auth'
+import { redirect } from 'next/navigation'
+import { createServerAuthClient, createAdminClient } from '@/lib/supabase/server'
+import { registerSchema, type RegisterForm } from '@/lib/validations/auth'
+import { firstZodError } from '@/lib/utils'
 
 export async function signup(formData: RegisterForm) {
-  const authSupabase = await createServerAuthClient()
-  const adminSupabase = createServerSupabaseClient()
+  const parsed = registerSchema.safeParse(formData)
+  if (!parsed.success) return { error: firstZodError(parsed.error) }
 
-  // Validate the form data
-  const result = registerSchema.safeParse(formData)
-  if (!result.success) {
-    return { error: result.error.issues[0].message }
-  }
+  const { email, password, firstName, lastName, role, city, bio, pricePerDay } = parsed.data
 
-  const { email, password, firstName, lastName, role, city, bio, pricePerDay } = result.data
+  const admin = createAdminClient()
 
-  // Use admin client to create the user with email already confirmed,
-  // so the auth.users row is fully committed and the profiles FK insert works.
-  const { data: adminAuthData, error: adminAuthError } = await adminSupabase.auth.admin.createUser({
+  // 1. Create user (admin, so email is auto-confirmed)
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
   })
 
-  console.log("result", result.data, adminAuthData)
+  if (authError) return { error: authError.message }
+  if (!authData.user) return { error: 'Failed to create user' }
 
-  if (adminAuthError) {
-    return { error: adminAuthError.message }
-  }
+  const userId = authData.user.id
 
-  if (!adminAuthData.user) {
-    return { error: 'Failed to create user' }
-  }
-
-  const userId = adminAuthData.user.id
-
-  // Sign the user in immediately after creation
-  const { error: signInError } = await authSupabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (signInError) {
-    return { error: signInError.message }
-  }
-
-  // Insert into profiles table
-  const { error: profileError } = await adminSupabase.from('profiles').insert({
+  // 2. Create profile
+  const { error: profileError } = await admin.from('profiles').insert({
     id: userId,
     role,
     first_name: firstName,
@@ -57,22 +36,25 @@ export async function signup(formData: RegisterForm) {
     bio: bio || null,
   })
 
-  if (profileError) {
-    return { error: profileError.message }
-  }
+  if (profileError) return { error: profileError.message }
 
-  // If role is SITTER, insert into sitter_profiles
+  // 3. Create sitter profile if needed
   if (role === 'SITTER') {
-    const { error: sitterError } = await adminSupabase.from('sitter_profiles').insert({
+    const { error: sitterError } = await admin.from('sitter_profiles').insert({
       profile_id: userId,
       price_per_day: pricePerDay!,
     })
-
-    if (sitterError) {
-      return { error: sitterError.message }
-    }
+    if (sitterError) return { error: sitterError.message }
   }
 
-  revalidatePath('/', 'layout')
-  return { destination: role === 'OWNER' ? '/owner' : '/sitter' }
+  // 4. Sign the user in (sets cookies for subsequent requests)
+  const supabase = await createServerAuthClient()
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (signInError) return { error: signInError.message }
+
+  redirect(role === 'OWNER' ? '/owner' : '/sitter')
 }

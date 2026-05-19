@@ -1,25 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { logout } from '../../actions/logout'
-import { Button } from '../ui/Button'
+import { useTransition } from 'react'
+import { logout } from '@/actions/logout'
 
-export const LogoutButton = () => {
-  const [loading, setLoading] = useState(false)
-
-  const handleLogout = async () => {
-    setLoading(true)
-    await logout()
-    // Redirect is handled by the server action
-  }
+export function LogoutButton() {
+  const [isPending, startTransition] = useTransition()
 
   return (
-    <Button
-      onClick={handleLogout}
-      disabled={loading}
-      className="bg-gray-200 hover:bg-gray-300 text-gray-700 hover:text-gray-900"
+    <button
+      type="button"
+      onClick={() => startTransition(() => logout())}
+      disabled={isPending}
+      className="text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      {loading ? 'Signing out...' : 'Sign Out'}
-    </Button>
+      {isPending ? 'Signing out...' : 'Log out'}
+    </button>
   )
 }

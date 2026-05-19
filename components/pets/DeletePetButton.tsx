@@ -19,7 +19,7 @@ export function DeletePetButton({ petId, petName }: DeletePetButtonProps) {
     setLoading(true)
     setError(null)
     const result = await deletePet(petId)
-    if (result.error) {
+    if (!result.success) {
       setError(result.error)
       setLoading(false)
       setConfirming(false)

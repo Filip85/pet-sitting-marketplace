@@ -1,7 +1,5 @@
 import Link from 'next/link'
-import type { SitterWithProfile } from '../../types'
-
-export type { SitterWithProfile }
+import type { SitterWithProfile } from '@/types'
 
 interface SitterCardProps {
   sitter: SitterWithProfile

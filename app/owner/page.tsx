@@ -1,91 +1,82 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { createServerAuthClient, createServerSupabaseClient } from '@/lib/supabase/server'
-import { LogoutButton } from '../../components/auth/LogoutButton'
+
+import { requireRole } from '@/lib/supabase/protected'
+import { createAdminClient } from '@/lib/supabase/server'
+import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { PetList } from '@/components/pets/PetList'
+import { OwnerBookingsList, type OwnerBookingListItem } from '@/components/bookings/OwnerBookingsList'
+import type { Pet, Profile } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
 export default async function OwnerPage() {
-  const authClient = await createServerAuthClient()
-  const { data: { user } } = await authClient.auth.getUser()
+  const { user } = await requireRole('OWNER')
+  const db = createAdminClient()
 
-  console.log(user ? `Authenticated user: ${user.email}` : 'No authenticated user found')
-  if (!user) redirect('/login')
+  // Fetch pets + bookings in parallel
+  const [{ data: pets }, { data: bookings }] = await Promise.all([
+    db.from('pets').select('*').eq('owner_id', user.id).order('created_at', { ascending: false }),
+    db.from('bookings').select('id, sitter_id, pet_id, start_date, end_date, total_price, status, created_at').eq('owner_id', user.id).order('created_at', { ascending: false }),
+  ])
 
-  const supabase = createServerSupabaseClient()
-  const { count: petCount } = await supabase
-    .from('pets')
-    .select('*', { count: 'exact', head: true })
-    .eq('owner_id', user.id)
+  const petList = (pets as Pet[]) ?? []
+  const bookingRows = bookings ?? []
+
+  // Fetch related sitter profiles
+  const sitterIds = [...new Set(bookingRows.map((b) => b.sitter_id))]
+  const { data: sitters } = sitterIds.length
+    ? await db.from('profiles').select('id, first_name, last_name, city').in('id', sitterIds)
+    : { data: [] as Pick<Profile, 'id' | 'first_name' | 'last_name' | 'city'>[] }
+
+  const petsById = new Map(petList.map((p) => [p.id, p]))
+  const sittersById = new Map(((sitters ?? []) as Pick<Profile, 'id' | 'first_name' | 'last_name' | 'city'>[]).map((s) => [s.id, s]))
+
+  const bookingItems: OwnerBookingListItem[] = bookingRows.map((b) => {
+    const pet = petsById.get(b.pet_id)
+    const sitter = sittersById.get(b.sitter_id)
+    return {
+      id: b.id,
+      start_date: b.start_date,
+      end_date: b.end_date,
+      total_price: Number(b.total_price),
+      status: b.status,
+      created_at: b.created_at,
+      pet: pet ? { name: pet.name, type: pet.type } : undefined,
+      sitter: sitter ? { first_name: sitter.first_name, last_name: sitter.last_name, city: sitter.city } : undefined,
+    }
+  })
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-
-        {/* Header */}
-        <div className="flex justify-between items-start mb-10">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Owner Dashboard</h1>
-            <p className="text-gray-400 text-sm mt-1">Manage your pets and find sitters</p>
-          </div>
-          <LogoutButton />
-        </div>
-
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-          {/* My Pets */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-xl">
-              🐾
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">My Pets</h3>
-              <p className="text-sm text-gray-400 mt-0.5">
-                {petCount ?? 0} {petCount === 1 ? 'pet' : 'pets'} registered
-              </p>
-            </div>
-            <Link
-              href="/owner/pets"
-              className="mt-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 px-4 rounded-xl transition-colors"
-            >
-              Manage Pets
-            </Link>
-          </div>
-
-          {/* Find Sitters */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
-              🔍
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Find Sitters</h3>
-              <p className="text-sm text-gray-400 mt-0.5">Browse available pet sitters</p>
-            </div>
-            <Link
-              href="/sitters"
-              className="mt-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2.5 px-4 rounded-xl transition-colors"
-            >
-              Browse Sitters
-            </Link>
-          </div>
-
-          {/* Bookings */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-xl">
-              📅
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">My Bookings</h3>
-              <p className="text-sm text-gray-400 mt-0.5">View your upcoming bookings</p>
-            </div>
-            <span className="mt-auto inline-flex items-center justify-center gap-2 bg-gray-100 text-gray-400 text-sm font-medium py-2.5 px-4 rounded-xl cursor-not-allowed">
-              Coming Soon
-            </span>
-          </div>
-
-        </div>
+    <PageContainer className="py-10 sm:py-12">
+      <div className="rounded-3xl bg-gradient-to-br from-sky-50 via-indigo-50 to-white border border-indigo-100 p-8 sm:p-10 mb-10 shadow-sm">
+        <PageHeader title="Owner Dashboard" subtitle="Pets and bookings in one place." />
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
+          <div className="flex items-end justify-between gap-4 mb-5">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">My pets</h2>
+              <p className="text-sm text-gray-400">{petList.length} total</p>
+            </div>
+            <Link href="/owner/pets" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              View all
+            </Link>
+          </div>
+          <PetList pets={petList} showCta={false} />
+        </section>
+
+        <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
+          <div className="flex items-end justify-between gap-4 mb-5">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">My bookings</h2>
+              <p className="text-sm text-gray-400">{bookingItems.length} total</p>
+            </div>
     </div>
+          <OwnerBookingsList bookings={bookingItems} showCta={false} />
+        </section>
+      </div>
+    </PageContainer>
   )
 }

@@ -4,10 +4,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { petSchema, PetForm as PetFormType } from '@/lib/validations/pets'
+import { petSchema, type PetForm as PetFormType } from '@/lib/validations/pets'
+import type { ActionResult } from '@/lib/utils'
 
 interface PetFormProps {
-  action: (data: PetFormType) => Promise<{ error?: string; success?: boolean }>
+  action: (data: PetFormType) => Promise<ActionResult>
   defaultValues?: Partial<PetFormType>
   submitLabel: string
 }
@@ -28,7 +29,7 @@ export function PetForm({ action, defaultValues, submitLabel }: PetFormProps) {
   const onSubmit = async (data: PetFormType) => {
     setServerError(null)
     const result = await action(data)
-    if (result.error) {
+    if (!result.success) {
       setServerError(result.error)
     } else {
       router.push('/owner/pets')

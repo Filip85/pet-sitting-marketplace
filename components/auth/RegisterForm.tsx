@@ -1,73 +1,40 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { registerSchema, RegisterForm as RegisterFormType } from '../../lib/validations/auth'
-import { signup } from '../../actions/signup'
-import { supabase } from '../../lib/supabase/client'
-import { Button } from '../ui/Button'
-import { Form } from '../ui/Form'
 
-export const RegisterForm = () => {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+import { registerSchema, type RegisterForm as RegisterFormType } from '@/lib/validations/auth'
+import { signup } from '@/actions/signup'
+import { Button } from '@/components/ui/Button'
+
+export function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormType>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormType>({
     resolver: zodResolver(registerSchema),
   })
 
   const selectedRole = watch('role')
 
   const onSubmit = async (data: RegisterFormType) => {
-    setLoading(true)
     setError(null)
-
-    try {
-      // 1. Server action: create user + profile rows in Supabase
-      const result = await signup(data)
-
-      if (result?.error) {
-        setError(result.error)
-        return
-      }
-
-      if (!result?.destination) {
-        setError('Unexpected signup response. Please try again.')
-        return
-      }
-
-      // 2. Sign in on the client so the browser session (localStorage)
-      //    is populated — useAuth() will then see the user immediately.
-      const { error: clientSignInError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      })
-
-      if (clientSignInError) {
-        // Account was created but client sign-in failed — send them to login
-        console.error('[RegisterForm] Client sign-in failed:', clientSignInError.message)
-        router.push('/login')
-        return
-      }
-
-      router.push(result.destination)
-    } catch (err) {
-      setError('Registration failed. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    // Server action creates user, signs in, sets cookies, and redirects.
+    // It only returns if there's an error.
+    const result = await signup(data)
+    if (result?.error) setError(result.error)
   }
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            First Name
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
           <input
             {...register('firstName')}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -75,11 +42,8 @@ export const RegisterForm = () => {
           />
           {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>}
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Last Name
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
           <input
             {...register('lastName')}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -90,9 +54,7 @@ export const RegisterForm = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Email
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
         <input
           {...register('email')}
           type="email"
@@ -103,9 +65,7 @@ export const RegisterForm = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Password
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
         <input
           {...register('password')}
           type="password"
@@ -116,9 +76,7 @@ export const RegisterForm = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Role
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
         <select
           {...register('role')}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -131,9 +89,7 @@ export const RegisterForm = () => {
 
       {selectedRole === 'SITTER' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Price per Day ($)
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Price per Day ($)</label>
           <input
             {...register('pricePerDay', { valueAsNumber: true })}
             type="number"
@@ -147,9 +103,7 @@ export const RegisterForm = () => {
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          City
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
         <input
           {...register('city')}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -158,9 +112,7 @@ export const RegisterForm = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Bio
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
         <textarea
           {...register('bio')}
           rows={3}
@@ -175,9 +127,9 @@ export const RegisterForm = () => {
         </div>
       )}
 
-      <Button type="submit" disabled={loading} className="w-full">
-        {loading ? 'Creating Account...' : 'Create Account'}
+      <Button type="submit" disabled={isSubmitting} className="w-full">
+        {isSubmitting ? 'Creating Account...' : 'Create Account'}
       </Button>
-    </Form>
+    </form>
   )
 }

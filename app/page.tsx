@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { Navbar } from '../components/layout/Navbar'
+
+import { AppNavbar } from '@/components/layout/AppNavbar'
+import { PageContainer } from '@/components/layout/PageContainer'
 import { Footer } from '../components/layout/Footer'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -13,43 +15,46 @@ const STEPS = [
   },
   {
     number: '02',
-    title: 'Book a stay',
+    title: 'Request a booking',
     description:
-      'Choose your dates and send a booking request. Your sitter confirms and you\'re all set.',
+      'Choose your dates and send a request. Your sitter reviews and responds.',
   },
   {
     number: '03',
-    title: 'Relax & enjoy',
+    title: 'Relax',
     description:
-      'Drop off your pet and go. Your sitter keeps them happy, safe, and loved while you\'re away.',
+      'Once accepted, you’re all set. Your pet gets loving care while you’re away.',
   },
 ]
 
 const FEATURES = [
   {
-    icon: '🐾',
-    title: 'Vetted sitters',
+    icon: '✨',
+    title: 'Simple & transparent',
     description:
-      'Every sitter builds a public profile with their experience, services, and daily rate — so you always know who\'s caring for your pet.',
+      'Clear daily rates, easy date selection, and upfront totals — no surprises.',
+    accent: 'from-blue-600 to-indigo-600',
   },
   {
-    icon: '📅',
-    title: 'Flexible stays',
+    icon: '🛡️',
+    title: 'Trusted profiles',
     description:
-      'One night or two weeks — find the right sitter for any schedule, with transparent pricing and no hidden fees.',
+      'Sitters share experience, services, and a bio so you can book confidently.',
+    accent: 'from-emerald-600 to-teal-600',
   },
   {
-    icon: '💬',
-    title: 'Easy booking',
+    icon: '💌',
+    title: 'Request → confirm',
     description:
-      'Send a request, get confirmed, and manage everything from one simple dashboard built for pet owners.',
+      'Send a request and get a clear ACCEPTED / REJECTED response in your dashboard.',
+    accent: 'from-fuchsia-600 to-pink-600',
   },
 ]
 
 const STATS = [
-  { value: '200+', label: 'Sitters available' },
-  { value: '500+', label: 'Pets cared for' },
-  { value: '4.9★', label: 'Average rating' },
+  { value: '200+', label: 'Sitters' },
+  { value: '500+', label: 'Happy pets' },
+  { value: '4.9★', label: 'Avg. rating' },
 ]
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -57,149 +62,194 @@ const STATS = [
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Navbar />
+      <AppNavbar />
 
-      <main className="flex-1 pt-16">
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-indigo-50 to-white">
+          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-blue-200/60 to-indigo-200/60 blur-2xl" />
+          <div className="absolute -bottom-28 -left-24 w-72 h-72 rounded-full bg-gradient-to-br from-pink-200/60 to-rose-200/60 blur-2xl" />
 
-        <section className="bg-gradient-to-b from-blue-50 to-white">
-          <div className="max-w-4xl mx-auto px-4 pt-24 pb-20 text-center">
-
-            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full mb-8">
-              Pet-sitting marketplace
-            </span>
-
-            <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-6">
-              Your pet deserves<br />
-              <span className="text-blue-600">the best care.</span>
-            </h1>
-
-            <p className="text-lg text-gray-500 max-w-xl mx-auto mb-10 leading-relaxed">
-              Connect with trusted local sitters who treat your pet like their own.
-              Simple booking, transparent pricing, total peace of mind.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/sitters"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm px-8 py-3.5 rounded-xl transition-colors shadow-sm shadow-blue-200"
-              >
-                Find a sitter
-                <span aria-hidden="true">→</span>
-              </Link>
-              <Link
-                href="/register"
-                className="w-full sm:w-auto inline-flex items-center justify-center bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-800 font-semibold text-sm px-8 py-3.5 rounded-xl border border-gray-200 transition-colors"
-              >
-                Become a sitter
-              </Link>
-            </div>
-
-            {/* Trust stats */}
-            <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{stat.label}</p>
+          <PageContainer className="pt-16 sm:pt-20 pb-16 sm:pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-white/70 border border-white rounded-2xl px-4 py-2 text-xs font-semibold tracking-wide text-gray-700 shadow-sm">
+                  <span className="text-base" aria-hidden>🐶</span>
+                  Pet-sitting marketplace
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        <section className="bg-white py-24">
-          <div className="max-w-6xl mx-auto px-4">
+                <h1 className="mt-6 text-5xl sm:text-6xl font-extrabold text-gray-900 leading-[1.05] tracking-tight">
+                  Happy pets.
+                  <br />
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                    Stress-free trips.
+                  </span>
+                </h1>
 
-            {/* Section header */}
-            <div className="text-center mb-16">
-              <p className="text-xs font-semibold tracking-widest uppercase text-blue-600 mb-3">
-                How it works
-              </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                Booked in three simple steps
-              </h2>
-            </div>
+                <p className="mt-5 text-lg text-gray-600 leading-relaxed max-w-xl">
+                  Find trusted local sitters who treat your pet like family.
+                  Request a booking in minutes and track status from your dashboard.
+                </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              {STEPS.map((step) => (
-                <div key={step.number} className="relative text-center">
-                  {/* Step number circle */}
-                  <div className="w-12 h-12 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center mx-auto mb-5">
-                    {step.number}
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/sitters"
+                    className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-sm px-7 py-3.5 rounded-2xl transition-colors shadow-sm shadow-blue-200"
+                  >
+                    Find a sitter
+                    <span aria-hidden>→</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center justify-center bg-white/80 hover:bg-white text-gray-900 font-semibold text-sm px-7 py-3.5 rounded-2xl border border-gray-200 transition-colors"
+                  >
+                    Become a sitter
+                  </Link>
+                </div>
+
+                <div className="mt-10 flex items-center gap-6 sm:gap-10">
+                  {STATS.map((stat) => (
+                    <div key={stat.label}>
+                      <p className="text-2xl font-extrabold text-gray-900">{stat.value}</p>
+                      <p className="text-sm text-gray-500 mt-0.5">{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right hero card */}
+              <div className="lg:justify-self-end">
+                <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8 sm:p-10">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-900">Booking preview</p>
+                    <span className="text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full">
+                      PENDING
+                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">
-                    {step.description}
+
+                  <div className="mt-6 space-y-4">
+                    <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+                      <p className="text-xs text-gray-500">Pet</p>
+                      <p className="font-semibold text-gray-900">🐾 Buddy (Dog)</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+                        <p className="text-xs text-gray-500">Start</p>
+                        <p className="font-semibold text-gray-900">Jun 20</p>
+                      </div>
+                      <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+                        <p className="text-xs text-gray-500">End</p>
+                        <p className="font-semibold text-gray-900">Jun 23</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
+                      <p className="text-xs text-blue-100">Total</p>
+                      <p className="text-2xl font-extrabold">$240</p>
+                      <p className="text-xs text-blue-100 mt-1">Calculated automatically from sitter rate</p>
+                    </div>
+                  </div>
+
+                  <p className="mt-6 text-xs text-gray-500">
+                    This is just an example — real totals depend on sitter rate and dates.
                   </p>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+          </PageContainer>
         </section>
 
-        <section className="bg-gray-50 py-24">
-          <div className="max-w-6xl mx-auto px-4">
-
-            {/* Section header */}
-            <div className="text-center mb-16">
+        {/* Features */}
+        <section className="bg-white py-14 sm:py-20">
+          <PageContainer>
+            <div className="text-center mb-12">
               <p className="text-xs font-semibold tracking-widest uppercase text-blue-600 mb-3">
                 Why PetCare
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                Everything your pet needs
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+                Everything you need, nothing you don’t
               </h2>
+              <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
+                A clean MVP experience focused on browsing, requesting, and managing bookings.
+              </p>
             </div>
 
-            {/* Feature cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {FEATURES.map((feature) => (
+              {FEATURES.map((f) => (
                 <div
-                  key={feature.title}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col gap-4"
+                  key={f.title}
+                  className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8"
                 >
-                  <span className="text-3xl" aria-hidden="true">
-                    {feature.icon}
-                  </span>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.accent} text-white flex items-center justify-center text-xl font-bold shadow-sm`}>
+                    {f.icon}
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-gray-900">{f.title}</h3>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{f.description}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </PageContainer>
         </section>
 
-        <section className="bg-blue-600 py-20">
-          <div className="max-w-2xl mx-auto px-4 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Ready to find the perfect sitter?
-            </h2>
-            <p className="text-blue-100 mb-10 leading-relaxed">
-              Join hundreds of pet owners who trust PetCare for reliable,
-              affordable, and loving pet care.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/sitters"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-600 font-semibold text-sm px-8 py-3.5 rounded-xl transition-colors"
-              >
-                Find a sitter
-                <span aria-hidden="true">→</span>
-              </Link>
-              <Link
-                href="/register"
-                className="w-full sm:w-auto inline-flex items-center justify-center border border-white/40 hover:bg-blue-700 text-white font-semibold text-sm px-8 py-3.5 rounded-xl transition-colors"
-              >
-                Become a sitter
-              </Link>
+        {/* Steps */}
+        <section className="bg-gradient-to-b from-gray-50 to-white py-14 sm:py-20">
+          <PageContainer>
+            <div className="text-center mb-12">
+              <p className="text-xs font-semibold tracking-widest uppercase text-blue-600 mb-3">
+                How it works
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+                Three easy steps
+              </h2>
             </div>
-          </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {STEPS.map((step) => (
+                <div
+                  key={step.number}
+                  className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white text-sm font-extrabold flex items-center justify-center">
+                    {step.number}
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-gray-900">{step.title}</h3>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </PageContainer>
         </section>
 
+        {/* CTA */}
+        <section className="bg-gradient-to-r from-blue-600 to-indigo-600 py-14 sm:py-20">
+          <PageContainer>
+            <div className="rounded-3xl bg-white/10 border border-white/20 p-8 sm:p-10 text-center">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Ready to meet your pet’s new best friend?
+              </h2>
+              <p className="text-blue-100 mt-3 max-w-2xl mx-auto">
+                Browse sitters, send a booking request, and manage everything from your dashboard.
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/sitters"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-700 font-semibold text-sm px-7 py-3.5 rounded-2xl transition-colors"
+                >
+                  Find a sitter
+                  <span aria-hidden>→</span>
+                </Link>
+                <Link
+                  href="/register"
+                  className="w-full sm:w-auto inline-flex items-center justify-center border border-white/30 hover:bg-white/10 text-white font-semibold text-sm px-7 py-3.5 rounded-2xl transition-colors"
+                >
+                  Become a sitter
+                </Link>
+              </div>
+            </div>
+          </PageContainer>
+        </section>
       </main>
 
       <Footer />

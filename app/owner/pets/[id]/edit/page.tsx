@@ -1,6 +1,9 @@
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { createServerAuthClient, createServerSupabaseClient } from '@/lib/supabase/server'
+
+import { requireRole } from '@/lib/supabase/protected'
+import { createAdminClient } from '@/lib/supabase/server'
+import { PageContainer } from '@/components/layout/PageContainer'
 import { PetForm } from '@/components/pets/PetForm'
 import { updatePet } from '@/actions/pets'
 import type { PetForm as PetFormType } from '@/lib/validations/pets'
@@ -13,20 +16,17 @@ export default async function EditPetPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const { user } = await requireRole('OWNER')
+  const db = createAdminClient()
 
-  const authClient = await createServerAuthClient()
-  const { data: { user } } = await authClient.auth.getUser()
-  if (!user) redirect('/login')
-
-  const supabase = createServerSupabaseClient()
-  const { data: pet, error } = await supabase
+  const { data: pet } = await db
     .from('pets')
     .select('*')
     .eq('id', id)
     .eq('owner_id', user.id)
     .single()
 
-  if (error || !pet) notFound()
+  if (!pet) notFound()
 
   async function handleUpdate(data: PetFormType) {
     'use server'
@@ -34,23 +34,19 @@ export default async function EditPetPage({
   }
 
   return (
-    <div className="min-h-screenmax-w-lg mx-auto px-4 py-10 bg-gray-50">
-
-      {/* Back */}
+    <PageContainer className="py-10 sm:py-12">
       <Link
         href="/owner/pets"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-8"
+        className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
-          <path fillRule="evenodd" d="M14 8a.75.75 0 0 1-.75.75H4.56l3.22 3.22a.75.75 0 1 1-1.06 1.06l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 1.06L4.56 7.25h8.69A.75.75 0 0 1 14 8Z" clipRule="evenodd" />
-        </svg>
+        <span aria-hidden>←</span>
         Back to my pets
       </Link>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 sm:p-10 max-w-xl">
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-gray-900">Edit {pet.name}</h1>
-          <p className="text-sm text-gray-400 mt-1">Update your pet's details below.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit {pet.name}</h1>
+          <p className="text-sm text-gray-400 mt-1">Update your pet&apos;s details below.</p>
         </div>
         <PetForm
           action={handleUpdate}
@@ -63,7 +59,6 @@ export default async function EditPetPage({
           }}
         />
       </div>
-
-    </div>
+    </PageContainer>
   )
 }
