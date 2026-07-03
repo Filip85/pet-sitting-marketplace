@@ -66,7 +66,7 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-indigo-50 to-white">
+        <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-indigo-50 to-white bg-[url('https://hips.hearstapps.com/hmg-prod/images/c33b2259-8c6b-4308-bc6f-5373d8a6600d.jpeg?crop=1.00xw:0.753xh;0,0.115xh&resize=1024:*')] bg-cover bg-center">
           <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-blue-200/60 to-indigo-200/60 blur-2xl" />
           <div className="absolute -bottom-28 -left-24 w-72 h-72 rounded-full bg-gradient-to-br from-pink-200/60 to-rose-200/60 blur-2xl" />
 

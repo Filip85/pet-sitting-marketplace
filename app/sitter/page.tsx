@@ -1,5 +1,8 @@
+import Link from 'next/link'
+
 import { requireRole } from '@/lib/supabase/protected'
 import { createAdminClient } from '@/lib/supabase/server'
+import { parseServices, SITTER_SERVICES } from '@/lib/constants/services'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { SitterBookingsList, type SitterBookingListItem } from '@/components/bookings/SitterBookingsList'
@@ -11,11 +14,15 @@ export default async function SitterPage() {
   const { user } = await requireRole('SITTER')
   const db = createAdminClient()
 
-  const { data: bookings } = await db
+  // Fetch sitter profile + bookings in parallel
+  const [{ data: sitterProfile }, { data: bookings }] = await Promise.all([
+    db.from('sitter_profiles').select('services_offered, price_per_day').eq('profile_id', user.id).single(),
+    db
     .from('bookings')
     .select('id, owner_id, pet_id, start_date, end_date, total_price, status, created_at')
     .eq('sitter_id', user.id)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }),
+  ])
 
   const bookingRows = bookings ?? []
 
@@ -58,8 +65,56 @@ export default async function SitterPage() {
         <PageHeader
           title="Sitter Dashboard"
           subtitle={`${pendingCount} pending ${pendingCount === 1 ? 'request' : 'requests'}`}
+          right={
+            <Link
+              href="/sitter/profile"
+              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl border border-gray-200 transition-colors"
+            >
+              Edit profile
+            </Link>
+          }
         />
       </div>
+
+      {/* Services quick glance */}
+      <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8 mb-8">
+        <div className="flex items-end justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">My services</h2>
+            <p className="text-sm text-gray-400">What you offer to pet owners.</p>
+          </div>
+          <Link href="/sitter/profile" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+            Edit
+          </Link>
+        </div>
+        {(() => {
+          const ids = parseServices(sitterProfile?.services_offered)
+          const serviceMap = new Map<string, { label: string; icon: string }>(SITTER_SERVICES.map((s) => [s.id, s]))
+          if (ids.length === 0) {
+            return (
+              <p className="text-sm text-gray-400">
+                No services selected yet.{' '}
+                <Link href="/sitter/profile" className="text-blue-600 hover:underline">Add services</Link>
+              </p>
+            )
+          }
+          return (
+            <div className="flex flex-wrap gap-2">
+              {ids.map((id) => {
+                const s = serviceMap.get(id)
+                return (
+                  <span
+                    key={id}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg"
+                  >
+                    {s?.icon ?? '•'} {s?.label ?? id}
+                  </span>
+                )
+              })}
+            </div>
+          )
+        })()}
+      </section>
 
       <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
         <div className="mb-5">

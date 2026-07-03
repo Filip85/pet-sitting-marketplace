@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { createServerAuthClient, createAdminClient } from '@/lib/supabase/server'
+import { parseServices, SITTER_SERVICES } from '@/lib/constants/services'
 
 export const dynamic = 'force-dynamic'
 
@@ -122,9 +123,8 @@ export default async function SitterProfilePage({
     maximumFractionDigits: 0,
   }).format(sitter.price_per_day)
 
-  const services = sitter.services_offered
-    ? sitter.services_offered.split(',').map((s) => s.trim()).filter(Boolean)
-    : []
+  const serviceIds = parseServices(sitter.services_offered)
+  const serviceMap = new Map<string, { label: string; icon: string }>(SITTER_SERVICES.map((s) => [s.id, s]))
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -215,16 +215,19 @@ export default async function SitterProfilePage({
           <div className="border-t border-gray-100 mb-6" />
           <div className="mb-8">
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">Services</h2>
-            {services.length > 0 ? (
+            {serviceIds.length > 0 ? (
               <ul className="flex flex-wrap gap-2">
-                {services.map((service) => (
-                  <li
-                    key={service}
-                    className="text-sm text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg"
-                  >
-                    {service}
-                  </li>
-                ))}
+                {serviceIds.map((id) => {
+                  const s = serviceMap.get(id)
+                  return (
+                    <li
+                      key={id}
+                      className="inline-flex items-center gap-1.5 text-sm text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg"
+                    >
+                      {s?.icon ?? '\u2022'} {s?.label ?? id}
+                    </li>
+                  )
+                })}
               </ul>
             ) : (
               <p className="text-sm text-gray-400">No services listed yet.</p>

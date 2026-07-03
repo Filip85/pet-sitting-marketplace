@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { PageContainer } from '@/components/layout/PageContainer'
 
 import { SitterGrid } from '@/components/sitters/SitterGrid'
+import { SitterFilters } from '@/components/sitters/SitterFilters'
 import type { SitterWithProfile } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -35,17 +36,59 @@ function normaliseSitters(rows: RawSitterRow[]): SitterWithProfile[] {
   }))
 }
 
-export default async function DashboardSittersPage() {
+function parseNumber(value: unknown): number | null {
+  if (typeof value !== 'string') return null
+  if (!value.trim()) return null
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
+}
+
+function parseServicesParam(value: unknown): string[] {
+  if (typeof value !== 'string') return []
+  return value
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+export default async function DashboardSittersPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ city?: string; min?: string; max?: string; services?: string }>
+}) {
   const db = createAdminClient()
 
-  const { data, error } = await db
+  const params = await searchParams
+  const city = params?.city?.trim() ?? ''
+  const min = parseNumber(params?.min)
+  const max = parseNumber(params?.max)
+  const services = parseServicesParam(params?.services)
+
+  let query = db
     .from('sitter_profiles')
-    .select(`
-      id, profile_id, price_per_day, years_of_experience,
-      services_offered, can_host_at_home, created_at,
-      profile:profiles ( first_name, last_name, city, bio )
-    `)
-    .order('created_at', { ascending: false })
+    .select(
+      `
+        id, profile_id, price_per_day, years_of_experience,
+        services_offered, can_host_at_home, created_at,
+        profile:profiles ( first_name, last_name, city, bio )
+      `
+    )
+
+  if (min != null) query = query.gte('price_per_day', min)
+  if (max != null) query = query.lte('price_per_day', max)
+
+  if (city) {
+    // Filter by city on joined profiles table
+    query = query.ilike('profiles.city', `%${city}%`)
+  }
+
+  if (services.length) {
+    // Match any selected service id in the comma-separated DB string
+    const orExpr = services.map((s) => `services_offered.ilike.%${s}%`).join(',')
+    query = query.or(orExpr)
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false })
 
   const sitters = normaliseSitters((data as RawSitterRow[]) ?? [])
   const count = sitters.length
@@ -59,14 +102,47 @@ export default async function DashboardSittersPage() {
         </p>
       </div>
 
-      {error ? (
-        <div className="rounded-3xl bg-red-50 border border-red-100 px-6 py-10 text-center">
-          <p className="text-red-700 font-semibold mb-1">Failed to load sitters.</p>
-          <p className="text-red-500 text-sm">Please try refreshing the page.</p>
-        </div>
-      ) : (
-        <SitterGrid sitters={sitters} />
-      )}
+      <div className="flex gap-8 lg:gap-10">
+        {/* Aside - Filters */}
+        <aside className="hidden lg:block w-80 flex-shrink-0">
+          <div className="sticky top-20">
+            <SitterFilters
+              initial={{
+                city,
+                minPrice: params?.min ?? '',
+                maxPrice: params?.max ?? '',
+                services,
+              }}
+              totalCount={count}
+            />
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 min-w-0">
+          {/* Mobile filters */}
+          <div className="lg:hidden mb-6">
+            <SitterFilters
+              initial={{
+                city,
+                minPrice: params?.min ?? '',
+                maxPrice: params?.max ?? '',
+                services,
+              }}
+              totalCount={count}
+            />
+          </div>
+
+          {error ? (
+            <div className="rounded-3xl bg-red-50 border border-red-100 px-6 py-10 text-center">
+              <p className="text-red-700 font-semibold mb-1">Failed to load sitters.</p>
+              <p className="text-red-500 text-sm">Please try refreshing the page.</p>
+            </div>
+          ) : (
+            <SitterGrid sitters={sitters} />
+          )}
+        </main>
+      </div>
     </PageContainer>
   )
 }

@@ -17,6 +17,7 @@ function getLinks(role: Role | null): NavLink[] {
   if (role === 'SITTER') {
     return [
       { href: '/sitter', label: 'Dashboard' },
+      { href: '/sitter/profile', label: 'My Profile' },
       { href: '/sitters', label: 'Browse Sitters' },
     ]
   }
