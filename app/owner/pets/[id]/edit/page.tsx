@@ -51,6 +51,7 @@ export default async function EditPetPage({
         <PetForm
           action={handleUpdate}
           submitLabel="Save Changes"
+          defaultImageUrl={pet.image_url ?? null}
           defaultValues={{
             name: pet.name,
             type: pet.type,

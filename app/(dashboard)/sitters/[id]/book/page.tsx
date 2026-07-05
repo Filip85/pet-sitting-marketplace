@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
 type SitterForBooking = {
   profile_id: string
   price_per_day: number
-  profile: { first_name: string; last_name: string }
+  profile: { first_name: string; last_name: string; image_url: string | null }
 }
 
 export default async function BookSitterPage({
@@ -29,7 +29,7 @@ export default async function BookSitterPage({
   const [{ data: sitterRow }, { data: pets }] = await Promise.all([
     db
       .from('sitter_profiles')
-      .select('profile_id, price_per_day, profile:profiles ( first_name, last_name )')
+      .select('profile_id, price_per_day, profile:profiles ( first_name, last_name, image_url )')
       .eq('profile_id', sitterId)
       .single(),
     db
@@ -52,6 +52,7 @@ export default async function BookSitterPage({
   }
 
   const sitterName = `${sitter.profile.first_name} ${sitter.profile.last_name}`
+  const initials = `${sitter.profile.first_name[0]}${sitter.profile.last_name[0]}`.toUpperCase()
   const action = createBooking.bind(null, sitterId)
 
   return (
@@ -69,10 +70,21 @@ export default async function BookSitterPage({
           <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-blue-400" />
 
           <div className="p-8 sm:p-10">
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Request booking</h1>
-            <p className="text-sm text-gray-400 mt-2">Send a request. Status defaults to PENDING.</p>
+            <div className="flex items-center gap-3 mb-4">
+              {sitter.profile.image_url ? (
+                <img src={sitter.profile.image_url} alt={`${sitterName} avatar`} className="h-12 w-12 rounded-full object-cover border border-gray-200" />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                  {initials}
+                </div>
+              )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Request booking</h1>
+                <p className="text-sm text-gray-400 mt-1">Send a request for {sitterName}. Status defaults to PENDING.</p>
+              </div>
+            </div>
 
-          <div className="border-t border-gray-100 my-6" />
+            <div className="border-t border-gray-100 my-6" />
 
             <BookingForm
               sitterId={sitterId}

@@ -60,9 +60,14 @@ export default async function OwnerPage() {
               <h2 className="text-lg font-semibold text-gray-900">My pets</h2>
               <p className="text-sm text-gray-400">{petList.length} total</p>
             </div>
-            <Link href="/owner/pets" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-              View all
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/owner/profile" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Edit profile
+              </Link>
+              <Link href="/owner/pets" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                View all
+              </Link>
+            </div>
           </div>
           <PetList pets={petList} showCta={false} />
         </section>

@@ -6,8 +6,9 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { sitterProfileSchema, type SitterProfileForm } from '@/lib/validations/sitter-profile'
 import { serializeServices } from '@/lib/constants/services'
 import { firstZodError, type ActionResult } from '@/lib/utils'
+import { uploadProfileImage } from '@/lib/supabase/storage'
 
-export async function updateSitterProfile(formData: SitterProfileForm): Promise<ActionResult> {
+export async function updateSitterProfile(formData: SitterProfileForm & { imageFile?: File | null }): Promise<ActionResult> {
   const { user } = await requireRole('SITTER')
   const parsed = sitterProfileSchema.safeParse(formData)
   if (!parsed.success) return { success: false, error: firstZodError(parsed.error) }
@@ -35,6 +36,13 @@ export async function updateSitterProfile(formData: SitterProfileForm): Promise<
       city: city || null,
     })
     .eq('id', user.id)
+
+  if (!profileError && formData.imageFile) {
+    const imageUrl = await uploadProfileImage(formData.imageFile, user.id)
+    if (imageUrl) {
+      await db.from('profiles').update({ image_url: imageUrl }).eq('id', user.id)
+    }
+  }
 
   if (profileError) return { success: false, error: profileError.message }
 

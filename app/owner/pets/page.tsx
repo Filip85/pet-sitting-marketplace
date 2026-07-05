@@ -60,9 +60,13 @@ export default async function PetsPage() {
           <ul className="space-y-3">
             {(pets as Pet[]).map((pet) => (
               <li key={pet.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 flex items-center gap-4">
-                <div className="shrink-0 w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-2xl select-none">
-                  {TYPE_EMOJI[pet.type] ?? '🐾'}
-                </div>
+                {pet.image_url ? (
+                  <img src={pet.image_url} alt={pet.name} className="shrink-0 h-12 w-12 rounded-full object-cover" />
+                ) : (
+                  <div className="shrink-0 w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-2xl select-none">
+                    {TYPE_EMOJI[pet.type] ?? '🐾'}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900">{pet.name}</p>
                   <p className="text-sm text-gray-400 mt-0.5">

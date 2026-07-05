@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,12 +12,15 @@ import { updateSitterProfile } from '@/actions/sitter-profile'
 
 interface SitterProfileFormProps {
   defaultValues: Partial<FormType>
+  defaultImageUrl?: string | null
 }
 
-export function SitterProfileForm({ defaultValues }: SitterProfileFormProps) {
+export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProfileFormProps) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(defaultImageUrl ?? null)
 
   const {
     register,
@@ -37,13 +41,19 @@ export function SitterProfileForm({ defaultValues }: SitterProfileFormProps) {
   const onSubmit = async (data: FormType) => {
     setServerError(null)
     setSaved(false)
-    const result = await updateSitterProfile(data)
+    const result = await updateSitterProfile({ ...data, imageFile: selectedFile })
     if (!result.success) {
       setServerError(result.error)
     } else {
       setSaved(true)
       router.refresh()
     }
+  }
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    setSelectedFile(file)
+    setPreviewUrl(file ? URL.createObjectURL(file) : defaultImageUrl ?? null)
   }
 
   return (
@@ -185,6 +195,24 @@ export function SitterProfileForm({ defaultValues }: SitterProfileFormProps) {
         {errors.bio && (
           <p className="mt-1.5 text-xs text-red-600">{errors.bio.message}</p>
         )}
+      </div>
+
+      {/* Profile photo */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          Profile photo <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
+        {previewUrl ? (
+          <div className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-2">
+            <img src={previewUrl} alt="Profile preview" className="h-32 w-full rounded-xl object-cover" />
+          </div>
+        ) : null}
       </div>
 
       {/* Submit */}

@@ -7,15 +7,20 @@ import { useState } from 'react'
 import { petSchema, type PetForm as PetFormType } from '@/lib/validations/pets'
 import type { ActionResult } from '@/lib/utils'
 
+type PetFormData = PetFormType & { imageFile?: File | null }
+
 interface PetFormProps {
-  action: (data: PetFormType) => Promise<ActionResult>
+  action: (data: PetFormData) => Promise<ActionResult>
   defaultValues?: Partial<PetFormType>
   submitLabel: string
+  defaultImageUrl?: string | null
 }
 
-export function PetForm({ action, defaultValues, submitLabel }: PetFormProps) {
+export function PetForm({ action, defaultValues, submitLabel, defaultImageUrl }: PetFormProps) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(defaultImageUrl ?? null)
 
   const {
     register,
@@ -28,13 +33,19 @@ export function PetForm({ action, defaultValues, submitLabel }: PetFormProps) {
 
   const onSubmit = async (data: PetFormType) => {
     setServerError(null)
-    const result = await action(data)
+    const result = await action({ ...data, imageFile: selectedFile })
     if (!result.success) {
       setServerError(result.error)
     } else {
       router.push('/owner/pets')
       router.refresh()
     }
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    setSelectedFile(file)
+    setPreviewUrl(file ? URL.createObjectURL(file) : defaultImageUrl ?? null)
   }
 
   return (
@@ -115,6 +126,24 @@ export function PetForm({ action, defaultValues, submitLabel }: PetFormProps) {
         {errors.age && (
           <p className="mt-1.5 text-xs text-red-600">{errors.age.message}</p>
         )}
+      </div>
+
+      {/* Photo */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          Pet photo <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
+        {previewUrl ? (
+          <div className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-2">
+            <img src={previewUrl} alt="Pet preview" className="h-40 w-full rounded-xl object-cover" />
+          </div>
+        ) : null}
       </div>
 
       {/* Actions */}

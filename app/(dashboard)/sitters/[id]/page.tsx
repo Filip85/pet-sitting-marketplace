@@ -21,6 +21,7 @@ interface SitterDetail {
     last_name: string
     city: string | null
     bio: string | null
+    image_url: string | null
   }
 }
 
@@ -44,7 +45,8 @@ async function fetchSitter(id: string): Promise<SitterDetail | null> {
           first_name,
           last_name,
           city,
-          bio
+          bio,
+          image_url
         )
       `)
       .eq('profile_id', id)
@@ -151,9 +153,13 @@ export default async function SitterProfilePage({
           {/* Header row */}
           <div className="flex items-start gap-6 mb-8">
             {/* Avatar */}
-            <div className="shrink-0 w-20 h-20 rounded-full bg-blue-100 text-blue-600 font-bold text-2xl flex items-center justify-center select-none">
-              {initials}
-            </div>
+            {sitter.profile.image_url ? (
+              <img src={sitter.profile.image_url} alt={`${fullName} avatar`} className="shrink-0 w-20 h-20 rounded-full object-cover border border-gray-200" />
+            ) : (
+              <div className="shrink-0 w-20 h-20 rounded-full bg-blue-100 text-blue-600 font-bold text-2xl flex items-center justify-center select-none">
+                {initials}
+              </div>
+            )}
 
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-bold text-gray-900">{fullName}</h1>

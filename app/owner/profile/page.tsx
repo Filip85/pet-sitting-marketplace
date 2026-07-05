@@ -2,51 +2,50 @@ import Link from 'next/link'
 
 import { requireRole } from '@/lib/supabase/protected'
 import { createAdminClient } from '@/lib/supabase/server'
-import { parseServices } from '@/lib/constants/services'
 import { PageContainer } from '@/components/layout/PageContainer'
-import { SitterProfileForm } from '@/components/sitters/SitterProfileForm'
+import { OwnerProfileForm } from '@/components/auth/OwnerProfileForm'
 
 export const dynamic = 'force-dynamic'
 
-export default async function SitterProfilePage() {
-  const { user } = await requireRole('SITTER')
+export default async function OwnerProfilePage() {
+  const { user } = await requireRole('OWNER')
   const db = createAdminClient()
 
-  const [{ data: sitterProfile }, { data: profile }] = await Promise.all([
-    db.from('sitter_profiles').select('price_per_day, years_of_experience, services_offered').eq('profile_id', user.id).single(),
-    db.from('profiles').select('bio, city, image_url').eq('id', user.id).single(),
-  ])
+  const { data: profile } = await db
+    .from('profiles')
+    .select('first_name, last_name, city, bio, image_url')
+    .eq('id', user.id)
+    .single()
 
   return (
     <PageContainer className="py-10 sm:py-12">
       <Link
-        href="/sitter"
+        href="/owner"
         className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6"
       >
-        <span aria-hidden>&larr;</span>
+        <span aria-hidden>←</span>
         Back to dashboard
       </Link>
 
       <div className="max-w-xl">
         <div className="rounded-3xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-          <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-blue-400" />
 
           <div className="p-8 sm:p-10">
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit profile</h1>
               <p className="text-sm text-gray-400 mt-1">
-                Update your rate, services, and bio. Owners see this on your public profile.
+                Add or update your profile photo and personal details.
               </p>
             </div>
 
-            <SitterProfileForm
+            <OwnerProfileForm
               defaultImageUrl={profile?.image_url ?? null}
               defaultValues={{
-                pricePerDay: sitterProfile ? Number(sitterProfile.price_per_day) : undefined,
-                yearsOfExperience: sitterProfile?.years_of_experience ?? undefined,
-                services: parseServices(sitterProfile?.services_offered),
-                bio: profile?.bio ?? '',
+                firstName: profile?.first_name ?? '',
+                lastName: profile?.last_name ?? '',
                 city: profile?.city ?? '',
+                bio: profile?.bio ?? '',
               }}
             />
           </div>

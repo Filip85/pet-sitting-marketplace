@@ -10,6 +10,7 @@ export interface Profile {
   email: string
   city?: string
   bio?: string
+  image_url?: string | null
   created_at: string
 }
 
@@ -30,6 +31,7 @@ export interface SitterWithProfile extends SitterProfile {
     last_name: string
     city?: string | null
     bio?: string | null
+    image_url?: string | null
   }
 }
 
@@ -40,6 +42,7 @@ export interface Pet {
   type: PetType
   breed?: string
   age?: number
+  image_url?: string | null
   created_at: string
 }
 

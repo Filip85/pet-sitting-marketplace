@@ -23,8 +23,8 @@ interface RawSitterRow {
   can_host_at_home: boolean
   created_at: string
   profile:
-    | { first_name: string; last_name: string; city: string | null; bio: string | null }
-    | { first_name: string; last_name: string; city: string | null; bio: string | null }[]
+    | { first_name: string; last_name: string; city: string | null; bio: string | null; image_url: string | null }
+    | { first_name: string; last_name: string; city: string | null; bio: string | null; image_url: string | null }[]
 }
 
 function normaliseSitters(rows: RawSitterRow[]): SitterWithProfile[] {
@@ -70,7 +70,7 @@ export default async function DashboardSittersPage({
       `
         id, profile_id, price_per_day, years_of_experience,
         services_offered, can_host_at_home, created_at,
-        profile:profiles ( first_name, last_name, city, bio )
+        profile:profiles ( first_name, last_name, city, bio, image_url )
       `
     )
 

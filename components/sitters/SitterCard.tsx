@@ -6,7 +6,7 @@ interface SitterCardProps {
 }
 
 export function SitterCard({ sitter }: SitterCardProps) {
-  const { first_name, last_name, city, bio } = sitter.profile
+  const { first_name, last_name, city, bio, image_url } = sitter.profile
   const initials = `${first_name[0]}${last_name[0]}`.toUpperCase()
   const fullName = `${first_name} ${last_name}`
   const shortBio = bio?.trim() || 'No bio provided yet.'
@@ -27,12 +27,16 @@ export function SitterCard({ sitter }: SitterCardProps) {
 
         {/* Avatar + name + city + price */}
         <div className="flex items-start gap-4 mb-5">
-          <div
-            className="shrink-0 w-16 h-16 rounded-full bg-blue-100 text-blue-600 font-bold text-lg flex items-center justify-center select-none"
-            aria-hidden="true"
-          >
-            {initials}
-          </div>
+          {image_url ? (
+            <img src={image_url} alt={`${fullName} avatar`} className="shrink-0 w-16 h-16 rounded-full object-cover border border-gray-200" />
+          ) : (
+            <div
+              className="shrink-0 w-16 h-16 rounded-full bg-blue-100 text-blue-600 font-bold text-lg flex items-center justify-center select-none"
+              aria-hidden="true"
+            >
+              {initials}
+            </div>
+          )}
 
           <div className="min-w-0 flex-1">
             <h3 className="text-lg font-bold text-gray-900 leading-snug">

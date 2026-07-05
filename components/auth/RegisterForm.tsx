@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import type { ChangeEvent } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { registerSchema, type RegisterForm as RegisterFormType } from '@/lib/validations/auth'
@@ -10,6 +11,8 @@ import { Button } from '@/components/ui/Button'
 
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const {
     register,
@@ -24,10 +27,14 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormType) => {
     setError(null)
-    // Server action creates user, signs in, sets cookies, and redirects.
-    // It only returns if there's an error.
-    const result = await signup(data)
+    const result = await signup({ ...data, imageFile: selectedFile })
     if (result?.error) setError(result.error)
+  }
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    setSelectedFile(file)
+    setPreviewUrl(file ? URL.createObjectURL(file) : null)
   }
 
   return (
@@ -119,6 +126,21 @@ export function RegisterForm() {
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           placeholder="Tell us about yourself..."
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Profile photo (optional)</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
+        {previewUrl ? (
+          <div className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-2">
+            <img src={previewUrl} alt="Profile preview" className="h-32 w-full rounded-xl object-cover" />
+          </div>
+        ) : null}
       </div>
 
       {error && (

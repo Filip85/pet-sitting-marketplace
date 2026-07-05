@@ -4,8 +4,10 @@ import { redirect } from 'next/navigation'
 import { createServerAuthClient, createAdminClient } from '@/lib/supabase/server'
 import { registerSchema, type RegisterForm } from '@/lib/validations/auth'
 import { firstZodError } from '@/lib/utils'
+import { uploadProfileImage } from '@/lib/supabase/storage'
+import { requireRole } from '@/lib/supabase/protected'
 
-export async function signup(formData: RegisterForm) {
+export async function signup(formData: RegisterForm & { imageFile?: File | null }) {
   const parsed = registerSchema.safeParse(formData)
   if (!parsed.success) return { error: firstZodError(parsed.error) }
 
@@ -36,6 +38,13 @@ export async function signup(formData: RegisterForm) {
     bio: bio || null,
   })
 
+  if (!profileError && formData.imageFile) {
+    const imageUrl = await uploadProfileImage(formData.imageFile, userId)
+    if (imageUrl) {
+      await admin.from('profiles').update({ image_url: imageUrl }).eq('id', userId)
+    }
+  }
+
   if (profileError) return { error: profileError.message }
 
   // 3. Create sitter profile if needed
@@ -57,4 +66,36 @@ export async function signup(formData: RegisterForm) {
   if (signInError) return { error: signInError.message }
 
   redirect(role === 'OWNER' ? '/owner' : '/sitter')
+}
+
+export async function updateOwnerProfile(formData: {
+  firstName: string
+  lastName: string
+  city?: string
+  bio?: string
+  imageFile?: File | null
+}) {
+  const { user } = await requireRole('OWNER')
+  const db = createAdminClient()
+
+  const { error } = await db
+    .from('profiles')
+    .update({
+      first_name: formData.firstName.trim(),
+      last_name: formData.lastName.trim(),
+      city: formData.city?.trim() || null,
+      bio: formData.bio?.trim() || null,
+    })
+    .eq('id', user.id)
+
+  if (error) return { error: error.message }
+
+  if (formData.imageFile) {
+    const imageUrl = await uploadProfileImage(formData.imageFile, user.id)
+    if (imageUrl) {
+      await db.from('profiles').update({ image_url: imageUrl }).eq('id', user.id)
+    }
+  }
+
+  return { success: true }
 }
