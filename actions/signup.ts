@@ -11,7 +11,8 @@ export async function signup(formData: RegisterForm & { imageFile?: File | null 
   const parsed = registerSchema.safeParse(formData)
   if (!parsed.success) return { error: firstZodError(parsed.error) }
 
-  const { email, password, firstName, lastName, role, city, bio, pricePerDay } = parsed.data
+  const { email, password, firstName, lastName, role, city, bio, pricePerDay, canHostAtHome } = parsed.data
+  const profileRole = role === 'HOTEL' ? 'SITTER' : role
 
   const admin = createAdminClient()
 
@@ -30,7 +31,7 @@ export async function signup(formData: RegisterForm & { imageFile?: File | null 
   // 2. Create profile
   const { error: profileError } = await admin.from('profiles').insert({
     id: userId,
-    role,
+    role: profileRole,
     first_name: firstName,
     last_name: lastName,
     email,
@@ -48,10 +49,12 @@ export async function signup(formData: RegisterForm & { imageFile?: File | null 
   if (profileError) return { error: profileError.message }
 
   // 3. Create sitter profile if needed
-  if (role === 'SITTER') {
+  if (role !== 'OWNER') {
     const { error: sitterError } = await admin.from('sitter_profiles').insert({
       profile_id: userId,
       price_per_day: pricePerDay!,
+      can_host_at_home: role === 'HOTEL' ? true : (canHostAtHome ?? false),
+      services_offered: role === 'HOTEL' ? 'pet-hotel' : null,
     })
     if (sitterError) return { error: sitterError.message }
   }

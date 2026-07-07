@@ -33,6 +33,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
       pricePerDay: defaultValues.pricePerDay ?? 0,
       yearsOfExperience: defaultValues.yearsOfExperience,
       services: defaultValues.services ?? [],
+      canHostAtHome: defaultValues.canHostAtHome ?? false,
       bio: defaultValues.bio ?? '',
       city: defaultValues.city ?? '',
     },
@@ -163,6 +164,21 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
         {errors.services && (
           <p className="mt-1.5 text-xs text-red-600">{errors.services.message}</p>
         )}
+      </div>
+
+      {/* Pet hotel */}
+      <div>
+        <label className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer">
+          <input
+            {...register('canHostAtHome')}
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span>
+            <span className="block text-sm font-medium text-gray-800">Offer pet hotel / boarding at my home</span>
+            <span className="block text-xs text-gray-500">Owners will see this on your public profile.</span>
+          </span>
+        </label>
       </div>
 
       {/* City */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import type { ChangeEvent } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,12 +18,22 @@ export function RegisterForm() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormType>({
     resolver: zodResolver(registerSchema),
   })
 
   const selectedRole = watch('role')
+
+  useEffect(() => {
+    if (selectedRole === 'HOTEL') {
+      setValue('canHostAtHome', true)
+    }
+    if (selectedRole === 'OWNER') {
+      setValue('canHostAtHome', false)
+    }
+  }, [selectedRole, setValue])
 
   const onSubmit = async (data: RegisterFormType) => {
     setError(null)
@@ -90,22 +100,43 @@ export function RegisterForm() {
         >
           <option value="OWNER">Pet Owner</option>
           <option value="SITTER">Pet Sitter</option>
+          <option value="HOTEL">Pet Hotel</option>
         </select>
         {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>}
       </div>
 
-      {selectedRole === 'SITTER' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Price per Day ($)</label>
-          <input
-            {...register('pricePerDay', { valueAsNumber: true })}
-            type="number"
-            step="0.01"
-            min="0"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            placeholder="50.00"
-          />
-          {errors.pricePerDay && <p className="mt-1 text-sm text-red-600">{errors.pricePerDay.message}</p>}
+      {selectedRole !== 'OWNER' && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Price per Day ($)</label>
+            <input
+              {...register('pricePerDay', { valueAsNumber: true })}
+              type="number"
+              step="0.01"
+              min="0"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="50.00"
+            />
+            {errors.pricePerDay && <p className="mt-1 text-sm text-red-600">{errors.pricePerDay.message}</p>}
+          </div>
+
+          {selectedRole === 'SITTER' ? (
+            <label className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer">
+              <input
+                {...register('canHostAtHome')}
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>
+                <span className="block text-sm font-medium text-gray-800">I offer pet hotel / boarding at my home</span>
+                <span className="block text-xs text-gray-500">Enable this if pets can stay overnight at your location.</span>
+              </span>
+            </label>
+          ) : (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              Pet Hotel profile automatically includes boarding at your home.
+            </div>
+          )}
         </div>
       )}
 

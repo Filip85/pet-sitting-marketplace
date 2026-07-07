@@ -13,7 +13,7 @@ export async function updateSitterProfile(formData: SitterProfileForm & { imageF
   const parsed = sitterProfileSchema.safeParse(formData)
   if (!parsed.success) return { success: false, error: firstZodError(parsed.error) }
 
-  const { pricePerDay, yearsOfExperience, services, bio, city } = parsed.data
+  const { pricePerDay, yearsOfExperience, services, bio, city, canHostAtHome } = parsed.data
   const db = createAdminClient()
 
   // Update sitter_profiles
@@ -23,6 +23,7 @@ export async function updateSitterProfile(formData: SitterProfileForm & { imageF
       price_per_day: pricePerDay,
       years_of_experience: yearsOfExperience ?? null,
       services_offered: serializeServices(services),
+      can_host_at_home: canHostAtHome ?? false,
     })
     .eq('profile_id', user.id)
 

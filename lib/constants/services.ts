@@ -1,5 +1,6 @@
 /** Predefined services a sitter can offer. */
 export const SITTER_SERVICES = [
+  { id: 'pet-hotel', label: 'Pet hotel / boarding', icon: '🏨' },
   { id: 'sitting-at-sitter-home', label: 'Sitting at my home', icon: '🏠' },
   { id: 'sitting-at-owner-home', label: "Sitting at pet owner's home", icon: '🏡' },
   { id: 'dog-walking', label: 'Dog walking', icon: '🐕‍🦺' },

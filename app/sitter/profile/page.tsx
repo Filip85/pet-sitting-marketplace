@@ -13,7 +13,7 @@ export default async function SitterProfilePage() {
   const db = createAdminClient()
 
   const [{ data: sitterProfile }, { data: profile }] = await Promise.all([
-    db.from('sitter_profiles').select('price_per_day, years_of_experience, services_offered').eq('profile_id', user.id).single(),
+    db.from('sitter_profiles').select('price_per_day, years_of_experience, services_offered, can_host_at_home').eq('profile_id', user.id).single(),
     db.from('profiles').select('bio, city, image_url').eq('id', user.id).single(),
   ])
 
@@ -45,6 +45,7 @@ export default async function SitterProfilePage() {
                 pricePerDay: sitterProfile ? Number(sitterProfile.price_per_day) : undefined,
                 yearsOfExperience: sitterProfile?.years_of_experience ?? undefined,
                 services: parseServices(sitterProfile?.services_offered),
+                canHostAtHome: sitterProfile?.can_host_at_home ?? false,
                 bio: profile?.bio ?? '',
                 city: profile?.city ?? '',
               }}

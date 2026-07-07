@@ -11,6 +11,7 @@ function getLinks(role: Role | null): NavLink[] {
     return [
       { href: '/owner', label: 'Dashboard' },
       { href: '/owner/pets', label: 'My Pets' },
+      { href: '/hotels', label: 'Pet Hotels' },
       { href: '/sitters', label: 'Browse Sitters' },
     ]
   }
@@ -18,10 +19,14 @@ function getLinks(role: Role | null): NavLink[] {
     return [
       { href: '/sitter', label: 'Dashboard' },
       { href: '/sitter/profile', label: 'My Profile' },
+      { href: '/hotels', label: 'Pet Hotels' },
       { href: '/sitters', label: 'Browse Sitters' },
     ]
   }
-  return [{ href: '/sitters', label: 'Browse Sitters' }]
+  return [
+    { href: '/hotels', label: 'Pet Hotels' },
+    { href: '/sitters', label: 'Browse Sitters' },
+  ]
 }
 
 export async function AppNavbar() {

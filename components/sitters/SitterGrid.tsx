@@ -3,9 +3,17 @@ import type { SitterWithProfile } from '@/types'
 
 interface SitterGridProps {
   sitters: SitterWithProfile[]
+  cardBadgeLabel?: string
+  emptyTitle?: string
+  emptyMessage?: string
 }
 
-export function SitterGrid({ sitters }: SitterGridProps) {
+export function SitterGrid({
+  sitters,
+  cardBadgeLabel,
+  emptyTitle = 'No sitters available yet',
+  emptyMessage = "We're growing every day. Check back soon — new sitters are joining all the time!",
+}: SitterGridProps) {
   if (sitters.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -25,9 +33,9 @@ export function SitterGrid({ sitters }: SitterGridProps) {
             />
           </svg>
         </div>
-        <h3 className="text-gray-700 text-lg font-semibold mb-1">No sitters available yet</h3>
+        <h3 className="text-gray-700 text-lg font-semibold mb-1">{emptyTitle}</h3>
         <p className="text-gray-400 text-sm max-w-xs">
-          We&apos;re growing every day. Check back soon — new sitters are joining all the time!
+          {emptyMessage}
         </p>
       </div>
     )
@@ -40,7 +48,7 @@ export function SitterGrid({ sitters }: SitterGridProps) {
     >
       {sitters.map((sitter) => (
         <li key={sitter.id}>
-          <SitterCard sitter={sitter} />
+          <SitterCard sitter={sitter} badgeLabel={cardBadgeLabel} />
         </li>
       ))}
     </ul>

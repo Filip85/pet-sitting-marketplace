@@ -28,12 +28,19 @@ interface RawSitterRow {
 }
 
 function normaliseSitters(rows: RawSitterRow[]): SitterWithProfile[] {
-  return rows.map((row) => ({
-    ...row,
-    years_of_experience: row.years_of_experience ?? undefined,
-    services_offered: row.services_offered ?? undefined,
-    profile: Array.isArray(row.profile) ? row.profile[0] : row.profile,
-  }))
+  const mapped: Array<SitterWithProfile | null> = rows
+    .map((row) => {
+      const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile
+      if (!profile) return null
+      return {
+        ...row,
+        years_of_experience: row.years_of_experience ?? undefined,
+        services_offered: row.services_offered ?? undefined,
+        profile,
+      }
+    })
+
+  return mapped.filter((row): row is SitterWithProfile => row !== null)
 }
 
 function parseNumber(value: unknown): number | null {
@@ -51,10 +58,15 @@ function parseServicesParam(value: unknown): string[] {
     .filter(Boolean)
 }
 
+function parseBooleanParam(value: unknown): boolean {
+  if (typeof value !== 'string') return false
+  return value === '1' || value.toLowerCase() === 'true'
+}
+
 export default async function DashboardSittersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ city?: string; min?: string; max?: string; services?: string }>
+  searchParams?: Promise<{ city?: string; min?: string; max?: string; services?: string; hotel?: string }>
 }) {
   const db = createAdminClient()
 
@@ -63,6 +75,7 @@ export default async function DashboardSittersPage({
   const min = parseNumber(params?.min)
   const max = parseNumber(params?.max)
   const services = parseServicesParam(params?.services)
+  const hotelOnly = parseBooleanParam(params?.hotel)
 
   let query = db
     .from('sitter_profiles')
@@ -86,6 +99,10 @@ export default async function DashboardSittersPage({
     // Match any selected service id in the comma-separated DB string
     const orExpr = services.map((s) => `services_offered.ilike.%${s}%`).join(',')
     query = query.or(orExpr)
+  }
+
+  if (hotelOnly) {
+    query = query.eq('can_host_at_home', true)
   }
 
   const { data, error } = await query.order('created_at', { ascending: false })
@@ -112,6 +129,7 @@ export default async function DashboardSittersPage({
                 minPrice: params?.min ?? '',
                 maxPrice: params?.max ?? '',
                 services,
+                hotelOnly,
               }}
               totalCount={count}
             />
@@ -128,6 +146,7 @@ export default async function DashboardSittersPage({
                 minPrice: params?.min ?? '',
                 maxPrice: params?.max ?? '',
                 services,
+                hotelOnly,
               }}
               totalCount={count}
             />

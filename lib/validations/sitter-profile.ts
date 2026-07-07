@@ -14,6 +14,7 @@ export const sitterProfileSchema = z.object({
   services: z.array(z.string().trim().min(1)),
   bio: z.string().trim().max(500, 'Bio is too long').optional(),
   city: z.string().trim().max(100, 'City name is too long').optional(),
+  canHostAtHome: z.boolean().optional(),
 })
 
 export type SitterProfileForm = z.infer<typeof sitterProfileSchema>

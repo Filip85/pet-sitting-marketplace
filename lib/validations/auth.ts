@@ -11,13 +11,14 @@ export const registerSchema = z
     password: z.string().min(6, 'Password must be at least 6 characters'),
     firstName: z.string().trim().min(1, 'First name is required'),
     lastName: z.string().trim().min(1, 'Last name is required'),
-    role: z.enum(['OWNER', 'SITTER']),
+    role: z.enum(['OWNER', 'SITTER', 'HOTEL']),
     city: z.string().trim().optional(),
     bio: z.string().trim().optional(),
     pricePerDay: z.number().positive('Price must be greater than 0').optional(),
+    canHostAtHome: z.boolean().optional(),
   })
   .refine(
-    (data) => data.role !== 'SITTER' || (data.pricePerDay !== undefined && data.pricePerDay > 0),
+    (data) => data.role === 'OWNER' || (data.pricePerDay !== undefined && data.pricePerDay > 0),
     { message: 'Price per day is required for sitters', path: ['pricePerDay'] }
   )
 

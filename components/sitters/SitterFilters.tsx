@@ -10,6 +10,7 @@ type SitterFiltersValue = {
   minPrice: string
   maxPrice: string
   services: string[]
+  hotelOnly: boolean
 }
 
 function uniq(arr: string[]) {
@@ -29,15 +30,17 @@ export function SitterFilters({
   const [minPrice, setMinPrice] = useState(initial.minPrice)
   const [maxPrice, setMaxPrice] = useState(initial.maxPrice)
   const [services, setServices] = useState<string[]>(initial.services)
+  const [hotelOnly, setHotelOnly] = useState<boolean>(initial.hotelOnly)
 
   const activeCount = useMemo(() => {
     return (
       (city.trim() ? 1 : 0) +
       (minPrice.trim() ? 1 : 0) +
       (maxPrice.trim() ? 1 : 0) +
-      (services.length ? 1 : 0)
+      (services.length ? 1 : 0) +
+      (hotelOnly ? 1 : 0)
     )
-  }, [city, maxPrice, minPrice, services.length])
+  }, [city, hotelOnly, maxPrice, minPrice, services.length])
 
   const toggleService = (id: string) => {
     setServices((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : uniq([...prev, id])))
@@ -56,6 +59,7 @@ export function SitterFilters({
     if (nextMax) params.set('max', nextMax)
 
     if (services.length) params.set('services', services.join(','))
+    if (hotelOnly) params.set('hotel', '1')
 
     const qs = params.toString()
     router.push(qs ? `/sitters?${qs}` : '/sitters')
@@ -66,6 +70,7 @@ export function SitterFilters({
     setMinPrice('')
     setMaxPrice('')
     setServices([])
+    setHotelOnly(false)
     router.push('/sitters')
   }
 
@@ -168,6 +173,22 @@ export function SitterFilters({
             </div>
           </div>
           <p className="mt-1 text-xs text-gray-400">Match any selected service.</p>
+        </div>
+
+        {/* Boarding / hotel */}
+        <div>
+          <label className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hotelOnly}
+              onChange={(e) => setHotelOnly(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span>
+              <span className="block text-sm font-medium text-gray-800">Pet hotel only</span>
+              <span className="block text-xs text-gray-500">Show only sitters that can host pets at their home.</span>
+            </span>
+          </label>
         </div>
       </div>
     </section>

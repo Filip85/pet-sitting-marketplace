@@ -3,9 +3,14 @@ import type { SitterWithProfile } from '@/types'
 
 interface SitterCardProps {
   sitter: SitterWithProfile
+  badgeLabel?: string
 }
 
-export function SitterCard({ sitter }: SitterCardProps) {
+export function SitterCard({ sitter, badgeLabel }: SitterCardProps) {
+  if (!sitter.profile) {
+    return null
+  }
+
   const { first_name, last_name, city, bio, image_url } = sitter.profile
   const initials = `${first_name[0]}${last_name[0]}`.toUpperCase()
   const fullName = `${first_name} ${last_name}`
@@ -39,6 +44,11 @@ export function SitterCard({ sitter }: SitterCardProps) {
           )}
 
           <div className="min-w-0 flex-1">
+            {badgeLabel ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-1 mb-2">
+                {badgeLabel}
+              </span>
+            ) : null}
             <h3 className="text-lg font-bold text-gray-900 leading-snug">
               {fullName}
             </h3>
