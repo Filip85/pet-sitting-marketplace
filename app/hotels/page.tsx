@@ -5,6 +5,7 @@ import { SitterGrid } from '@/components/sitters/SitterGrid'
 import { createAdminClient } from '@/lib/supabase/server'
 import { fetchExternalPetHotelsByCityDetailed } from '@/lib/hotels/external'
 import type { SitterWithProfile } from '@/types'
+import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from 'react'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,12 +15,7 @@ export const metadata: Metadata = {
 }
 
 function buildEmbedMapUrl(lat: number, lon: number): string {
-  const delta = 0.01
-  const left = lon - delta
-  const bottom = lat - delta
-  const right = lon + delta
-  const top = lat + delta
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${lat}%2C${lon}`
+  return `https://www.google.com/maps?q=${lat},${lon}&z=14&output=embed`
 }
 
 type HotelSource = 'external' | 'internal'
@@ -233,23 +229,8 @@ export default async function HotelsPage({
             </div>
           ) : (
             <div className="space-y-4">
-
-              {externalDebug ? (
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-900">
-                  <p className="font-semibold mb-2">Debug sources</p>
-                  <p>Variants: {externalDebug.variants.join(', ') || '-'}</p>
-                  <p>Overpass raw: {externalDebug.sourceCounts.overpassRaw}</p>
-                  <p>Overpass mapped: {externalDebug.sourceCounts.overpassMapped}</p>
-                  <p>Nominatim named: {externalDebug.sourceCounts.nominatimNamed}</p>
-                  <p>Photon: {externalDebug.sourceCounts.photon}</p>
-                  <p>Google: {externalDebug.sourceCounts.google}</p>
-                  <p>Merged before limit: {externalDebug.mergedBeforeLimit}</p>
-                  <p>Final shown: {externalDebug.finalCount}</p>
-                </div>
-              ) : null}
-
               <ul className="grid grid-cols-1 lg:grid-cols-2 gap-5" aria-label="External pet hotels">
-                {externalHotels.map((hotel) => (
+                {externalHotels.map((hotel: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; address: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; sourceUrl: string | undefined; lat: number; lon: number }) => (
                   <li key={hotel.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
                     <div className="mb-3">
                       <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-1 mb-2">
@@ -263,7 +244,7 @@ export default async function HotelsPage({
                         rel="noreferrer"
                         className="inline-flex mt-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
                       >
-                        Open in source map
+                        Open in Google Maps
                       </a>
                     </div>
 

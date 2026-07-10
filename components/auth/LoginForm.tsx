@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginForm as LoginFormType } from '@/lib/validations/auth'
 import { login } from '@/actions/login'
 import { Button } from '@/components/ui/Button'
+import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton'
 
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +61,17 @@ export function LoginForm() {
       <Button type="submit" disabled={isSubmitting} className="w-full rounded-2xl">
         {isSubmitting ? 'Signing in...' : 'Sign in'}
       </Button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden>
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase tracking-wide text-gray-400">
+          <span className="bg-white px-3">Or continue with Google</span>
+        </div>
+      </div>
+
+      <GoogleAuthButton mode="login" />
     </form>
   )
 }
