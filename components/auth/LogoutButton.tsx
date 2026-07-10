@@ -11,7 +11,7 @@ export function LogoutButton() {
       type="button"
       onClick={() => startTransition(() => logout())}
       disabled={isPending}
-      className="text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+      className="text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {isPending ? 'Signing out...' : 'Log out'}
     </button>

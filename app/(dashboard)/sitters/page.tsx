@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
 import { createAdminClient } from '@/lib/supabase/server'
 import { PageContainer } from '@/components/layout/PageContainer'
-
 import { SitterGrid } from '@/components/sitters/SitterGrid'
 import { SitterFilters } from '@/components/sitters/SitterFilters'
 import type { SitterWithProfile } from '@/types'
@@ -68,7 +68,7 @@ export default async function DashboardSittersPage({
 }: {
   searchParams?: Promise<{ city?: string; min?: string; max?: string; services?: string; hotel?: string }>
 }) {
-  const db = createAdminClient()
+  const [db, t] = [createAdminClient(), await getTranslations('Sitters')]
 
   const params = await searchParams
   const city = params?.city?.trim() ?? ''
@@ -91,12 +91,10 @@ export default async function DashboardSittersPage({
   if (max != null) query = query.lte('price_per_day', max)
 
   if (city) {
-    // Filter by city on joined profiles table
     query = query.ilike('profiles.city', `%${city}%`)
   }
 
   if (services.length) {
-    // Match any selected service id in the comma-separated DB string
     const orExpr = services.map((s) => `services_offered.ilike.%${s}%`).join(',')
     query = query.or(orExpr)
   }
@@ -113,14 +111,13 @@ export default async function DashboardSittersPage({
   return (
     <PageContainer className="py-10 sm:py-12">
       <div className="rounded-3xl bg-gradient-to-br from-violet-50 via-indigo-50 to-white border border-indigo-100 p-8 sm:p-10 mb-10 shadow-sm">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Browse sitters</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{t('title')}</h1>
         <p className="text-sm text-gray-500 mt-2">
-          {count === 0 ? 'No sitters available yet' : `${count} ${count === 1 ? 'sitter' : 'sitters'} available`}
+          {count === 0 ? t('countZero') : t('count', { count })}
         </p>
       </div>
 
       <div className="flex gap-8 lg:gap-10">
-        {/* Aside - Filters */}
         <aside className="hidden lg:block w-80 flex-shrink-0">
           <div className="sticky top-20">
             <SitterFilters
@@ -136,9 +133,7 @@ export default async function DashboardSittersPage({
           </div>
         </aside>
 
-        {/* Main content */}
         <main className="flex-1 min-w-0">
-          {/* Mobile filters */}
           <div className="lg:hidden mb-6">
             <SitterFilters
               initial={{
@@ -154,8 +149,8 @@ export default async function DashboardSittersPage({
 
           {error ? (
             <div className="rounded-3xl bg-red-50 border border-red-100 px-6 py-10 text-center">
-              <p className="text-red-700 font-semibold mb-1">Failed to load sitters.</p>
-              <p className="text-red-500 text-sm">Please try refreshing the page.</p>
+              <p className="text-red-700 font-semibold mb-1">{t('errorTitle')}</p>
+              <p className="text-red-500 text-sm">{t('errorDesc')}</p>
             </div>
           ) : (
             <SitterGrid sitters={sitters} />

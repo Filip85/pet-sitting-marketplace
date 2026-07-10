@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { SitterCard } from './SitterCard'
 import type { SitterWithProfile } from '@/types'
 
@@ -8,12 +9,15 @@ interface SitterGridProps {
   emptyMessage?: string
 }
 
-export function SitterGrid({
+export async function SitterGrid({
   sitters,
   cardBadgeLabel,
-  emptyTitle = 'No sitters available yet',
-  emptyMessage = "We're growing every day. Check back soon — new sitters are joining all the time!",
+  emptyTitle,
+  emptyMessage,
 }: SitterGridProps) {
+  const t = await getTranslations('Sitters')
+  const resolvedEmptyTitle = emptyTitle ?? t('countZero')
+  const resolvedEmptyMessage = emptyMessage ?? t('emptyDefault')
   if (sitters.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -33,10 +37,8 @@ export function SitterGrid({
             />
           </svg>
         </div>
-        <h3 className="text-gray-700 text-lg font-semibold mb-1">{emptyTitle}</h3>
-        <p className="text-gray-400 text-sm max-w-xs">
-          {emptyMessage}
-        </p>
+        <h3 className="text-gray-700 text-lg font-semibold mb-1">{resolvedEmptyTitle}</h3>
+        <p className="text-gray-400 text-sm max-w-xs">{resolvedEmptyMessage}</p>
       </div>
     )
   }

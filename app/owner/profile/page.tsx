@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 import { requireRole } from '@/lib/supabase/protected'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -8,7 +9,7 @@ import { OwnerProfileForm } from '@/components/auth/OwnerProfileForm'
 export const dynamic = 'force-dynamic'
 
 export default async function OwnerProfilePage() {
-  const { user } = await requireRole('OWNER')
+  const [{ user }, t] = await Promise.all([requireRole('OWNER'), getTranslations('Owner.profile')])
   const db = createAdminClient()
 
   const { data: profile } = await db
@@ -24,7 +25,7 @@ export default async function OwnerProfilePage() {
         className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6"
       >
         <span aria-hidden>←</span>
-        Back to dashboard
+        {t('back')}
       </Link>
 
       <div className="max-w-xl">
@@ -33,10 +34,8 @@ export default async function OwnerProfilePage() {
 
           <div className="p-8 sm:p-10">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit profile</h1>
-              <p className="text-sm text-gray-400 mt-1">
-                Add or update your profile photo and personal details.
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('title')}</h1>
+              <p className="text-sm text-gray-400 mt-1">{t('subtitle')}</p>
             </div>
 
             <OwnerProfileForm

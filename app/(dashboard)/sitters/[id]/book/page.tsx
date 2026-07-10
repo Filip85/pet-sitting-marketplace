@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 import { requireRole } from '@/lib/supabase/protected'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -22,10 +23,9 @@ export default async function BookSitterPage({
   params: Promise<{ id: string }>
 }) {
   const { id: sitterId } = await params
-  const { user } = await requireRole('OWNER')
+  const [{ user }, t] = await Promise.all([requireRole('OWNER'), getTranslations('Book')])
   const db = createAdminClient()
 
-  // Fetch sitter + owner's pets in parallel
   const [{ data: sitterRow }, { data: pets }] = await Promise.all([
     db
       .from('sitter_profiles')
@@ -62,7 +62,7 @@ export default async function BookSitterPage({
         className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6"
       >
         <span aria-hidden>←</span>
-        Back to sitter
+        {t('back')}
       </Link>
 
       <div className="max-w-xl">
@@ -79,8 +79,8 @@ export default async function BookSitterPage({
                 </div>
               )}
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Request booking</h1>
-                <p className="text-sm text-gray-400 mt-1">Send a request for {sitterName}. Status defaults to PENDING.</p>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{t('title')}</h1>
+                <p className="text-sm text-gray-400 mt-1">{t('subtitle', { name: sitterName })}</p>
               </div>
             </div>
 
@@ -100,7 +100,7 @@ export default async function BookSitterPage({
                   href="/owner/pets/new"
                   className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors"
                 >
-                  Add a pet
+                  {t('addPet')}
                 </Link>
               </div>
             )}

@@ -194,7 +194,7 @@ export function RegisterForm() {
         </div>
       </div>
 
-      <GoogleAuthButton mode="signup" />
+      <GoogleAuthButton mode="signup" role={selectedRole === 'HOTEL' ? 'SITTER' : (selectedRole as 'OWNER' | 'SITTER') ?? 'OWNER'} />
     </form>
   )
 }

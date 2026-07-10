@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import type { BookingStatus } from '@/types'
 import { acceptBookingRequest, rejectBookingRequest } from '@/actions/sitter-bookings'
 
@@ -12,6 +13,7 @@ export function BookingRequestActions({
   bookingId: string
   status: BookingStatus
 }) {
+  const t = useTranslations('Bookings')
   const router = useRouter()
   const [loading, setLoading] = useState<'ACCEPT' | 'REJECT' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -48,7 +50,7 @@ export function BookingRequestActions({
           disabled={loading != null}
           className="text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
         >
-          {loading === 'REJECT' ? 'Rejecting...' : 'Reject'}
+          {loading === 'REJECT' ? t('rejecting') : t('reject')}
         </button>
         <button
           type="button"
@@ -56,7 +58,7 @@ export function BookingRequestActions({
           disabled={loading != null}
           className="text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
         >
-          {loading === 'ACCEPT' ? 'Accepting...' : 'Accept'}
+          {loading === 'ACCEPT' ? t('accepting') : t('accept')}
         </button>
       </div>
     </div>

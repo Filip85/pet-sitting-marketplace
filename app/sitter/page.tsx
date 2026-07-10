@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 import { requireRole } from '@/lib/supabase/protected'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -11,7 +12,7 @@ import type { Pet, Profile } from '@/types'
 export const dynamic = 'force-dynamic'
 
 export default async function SitterPage() {
-  const { user } = await requireRole('SITTER')
+  const [{ user }, t, tSvc] = await Promise.all([requireRole('SITTER'), getTranslations('Sitter.dashboard'), getTranslations('ServiceLabels')])
   const db = createAdminClient()
 
   // Fetch sitter profile + bookings in parallel
@@ -63,14 +64,14 @@ export default async function SitterPage() {
     <PageContainer className="py-10 sm:py-12">
       <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-teal-50 to-white border border-emerald-100 p-8 sm:p-10 mb-10 shadow-sm">
         <PageHeader
-          title="Sitter Dashboard"
-          subtitle={`${pendingCount} pending ${pendingCount === 1 ? 'request' : 'requests'}`}
+          title={t('title')}
+          subtitle={t('pending', { count: pendingCount })}
           right={
             <Link
               href="/sitter/profile"
               className="inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl border border-gray-200 transition-colors"
             >
-              Edit profile
+              {t('editProfile')}
             </Link>
           }
         />
@@ -80,11 +81,11 @@ export default async function SitterPage() {
       <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8 mb-8">
         <div className="flex items-end justify-between gap-4 mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">My services</h2>
-            <p className="text-sm text-gray-400">What you offer to pet owners.</p>
+            <h2 className="text-lg font-semibold text-gray-900">{t('myServices')}</h2>
+            <p className="text-sm text-gray-400">{t('servicesSubtitle')}</p>
           </div>
           <Link href="/sitter/profile" className="text-sm font-medium text-blue-600 hover:text-blue-700">
-            Edit
+            {t('editServices')}
           </Link>
         </div>
         {(() => {
@@ -93,8 +94,8 @@ export default async function SitterPage() {
           if (ids.length === 0) {
             return (
               <p className="text-sm text-gray-400">
-                No services selected yet.{' '}
-                <Link href="/sitter/profile" className="text-blue-600 hover:underline">Add services</Link>
+                {t('noServices')}{' '}
+                <Link href="/sitter/profile" className="text-blue-600 hover:underline">{t('addServices')}</Link>
               </p>
             )
           }
@@ -107,7 +108,7 @@ export default async function SitterPage() {
                     key={id}
                     className="inline-flex items-center gap-1.5 text-sm text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg"
                   >
-                    {s?.icon ?? '•'} {s?.label ?? id}
+                    {s?.icon ?? '•'} {tSvc(id as Parameters<typeof tSvc>[0])}
                   </span>
                 )
               })}
@@ -118,8 +119,8 @@ export default async function SitterPage() {
 
       <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
         <div className="mb-5">
-          <h2 className="text-lg font-semibold text-gray-900">Incoming booking requests</h2>
-          <p className="text-sm text-gray-400">Accept or reject pending requests.</p>
+          <h2 className="text-lg font-semibold text-gray-900">{t('incomingRequests')}</h2>
+          <p className="text-sm text-gray-400">{t('incomingSubtitle')}</p>
         </div>
         <SitterBookingsList bookings={bookingItems} />
       </section>

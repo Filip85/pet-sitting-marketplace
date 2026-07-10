@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 import { SITTER_SERVICES } from '@/lib/constants/services'
 
@@ -24,6 +25,8 @@ export function SitterFilters({
   initial: SitterFiltersValue
   totalCount: number
 }) {
+  const t = useTranslations('Filter')
+  const tSvc = useTranslations('ServiceLabels')
   const router = useRouter()
 
   const [city, setCity] = useState(initial.city)
@@ -48,19 +51,14 @@ export function SitterFilters({
 
   const apply = () => {
     const params = new URLSearchParams()
-
     const nextCity = city.trim()
     if (nextCity) params.set('city', nextCity)
-
     const nextMin = minPrice.trim()
     if (nextMin) params.set('min', nextMin)
-
     const nextMax = maxPrice.trim()
     if (nextMax) params.set('max', nextMax)
-
     if (services.length) params.set('services', services.join(','))
     if (hotelOnly) params.set('hotel', '1')
-
     const qs = params.toString()
     router.push(qs ? `/sitters?${qs}` : '/sitters')
   }
@@ -78,10 +76,10 @@ export function SitterFilters({
     <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5 sm:p-6">
       <div className="flex flex-col gap-4 mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('title')}</h2>
           <p className="text-sm text-gray-400 mt-1">
-            {totalCount} result{totalCount === 1 ? '' : 's'}
-            {activeCount ? ` · ${activeCount} active` : ''}
+            {t('results', { count: totalCount })}
+            {activeCount ? ` ${t('active', { count: activeCount })}` : ''}
           </p>
         </div>
 
@@ -91,35 +89,33 @@ export function SitterFilters({
             onClick={clear}
             className="flex-1 inline-flex items-center justify-center text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl transition-colors"
           >
-            Clear
+            {t('clear')}
           </button>
           <button
             type="button"
             onClick={apply}
             className="flex-1 inline-flex items-center justify-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-xl transition-colors"
           >
-            Apply
+            {t('apply')}
           </button>
         </div>
       </div>
 
       <div className="space-y-6">
-        {/* City search */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t('city')}</label>
           <input
             value={city}
             onChange={(e) => setCity(e.target.value)}
             type="text"
-            placeholder="e.g. Zagreb"
+            placeholder={t('cityPlaceholder')}
             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
-          <p className="mt-1 text-xs text-gray-400">Search by sitter&apos;s city.</p>
+          <p className="mt-1 text-xs text-gray-400">{t('cityHint')}</p>
         </div>
 
-        {/* Price range */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Price range ($/day)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t('priceRange')}</label>
           <div className="grid grid-cols-2 gap-2">
             <input
               value={minPrice}
@@ -138,12 +134,11 @@ export function SitterFilters({
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
             />
           </div>
-          <p className="mt-1 text-xs text-gray-400">Leave empty to ignore.</p>
+          <p className="mt-1 text-xs text-gray-400">{t('priceHint')}</p>
         </div>
 
-        {/* Services */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Services</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t('services')}</label>
           <div className="rounded-2xl border border-gray-200 bg-white p-3 max-h-64 overflow-auto">
             <div className="grid grid-cols-1 gap-1">
               {SITTER_SERVICES.map((service) => {
@@ -162,20 +157,17 @@ export function SitterFilters({
                       className="h-4 w-4"
                     />
                     <span className="text-sm">
-                      <span className="mr-1" aria-hidden>
-                        {service.icon}
-                      </span>
-                      {service.label}
+                      <span className="mr-1" aria-hidden>{service.icon}</span>
+                      {tSvc(service.id)}
                     </span>
                   </label>
                 )
               })}
             </div>
           </div>
-          <p className="mt-1 text-xs text-gray-400">Match any selected service.</p>
+          <p className="mt-1 text-xs text-gray-400">{t('servicesHint')}</p>
         </div>
 
-        {/* Boarding / hotel */}
         <div>
           <label className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer">
             <input
@@ -185,8 +177,8 @@ export function SitterFilters({
               className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span>
-              <span className="block text-sm font-medium text-gray-800">Pet hotel only</span>
-              <span className="block text-xs text-gray-500">Show only sitters that can host pets at their home.</span>
+              <span className="block text-sm font-medium text-gray-800">{t('petHotelOnly')}</span>
+              <span className="block text-xs text-gray-500">{t('petHotelOnlyDesc')}</span>
             </span>
           </label>
         </div>

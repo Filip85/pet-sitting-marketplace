@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslations } from 'next-intl'
 
 import { loginSchema, type LoginForm as LoginFormType } from '@/lib/validations/auth'
 import { login } from '@/actions/login'
@@ -10,7 +11,9 @@ import { Button } from '@/components/ui/Button'
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton'
 
 export function LoginForm() {
+  const t = useTranslations('Auth.login')
   const [error, setError] = useState<string | null>(null)
+  const [oauthRole, setOauthRole] = useState<'OWNER' | 'SITTER'>('OWNER')
 
   const {
     register,
@@ -31,7 +34,27 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+        <p className="text-xs text-gray-500 text-center mb-2">{t('continueAs')}</p>
+        <div className="flex rounded-2xl border border-gray-200 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setOauthRole('OWNER')}
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors ${oauthRole === 'OWNER' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+          >
+            {t('asOwner')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setOauthRole('SITTER')}
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors ${oauthRole === 'SITTER' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+          >
+            {t('asSitter')}
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t('email')}</label>
         <input
           {...register('email')}
           type="email"
@@ -42,7 +65,7 @@ export function LoginForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t('password')}</label>
         <input
           {...register('password')}
           type="password"
@@ -59,7 +82,7 @@ export function LoginForm() {
       )}
 
       <Button type="submit" disabled={isSubmitting} className="w-full rounded-2xl">
-        {isSubmitting ? 'Signing in...' : 'Sign in'}
+        {isSubmitting ? t('submitting') : t('submit')}
       </Button>
 
       <div className="relative">
@@ -67,11 +90,11 @@ export function LoginForm() {
           <div className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase tracking-wide text-gray-400">
-          <span className="bg-white px-3">Or continue with Google</span>
+          <span className="bg-white px-3">{t('orGoogle')}</span>
         </div>
       </div>
 
-      <GoogleAuthButton mode="login" />
+      <GoogleAuthButton mode="login" role={oauthRole} />
     </form>
   )
 }

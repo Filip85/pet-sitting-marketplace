@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 import { requireRole } from '@/lib/supabase/protected'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -9,7 +10,7 @@ import { SitterProfileForm } from '@/components/sitters/SitterProfileForm'
 export const dynamic = 'force-dynamic'
 
 export default async function SitterProfilePage() {
-  const { user } = await requireRole('SITTER')
+  const [{ user }, t] = await Promise.all([requireRole('SITTER'), getTranslations('Sitter.profile')])
   const db = createAdminClient()
 
   const [{ data: sitterProfile }, { data: profile }] = await Promise.all([
@@ -24,7 +25,7 @@ export default async function SitterProfilePage() {
         className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6"
       >
         <span aria-hidden>&larr;</span>
-        Back to dashboard
+        {t('back')}
       </Link>
 
       <div className="max-w-xl">
@@ -33,10 +34,8 @@ export default async function SitterProfilePage() {
 
           <div className="p-8 sm:p-10">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit profile</h1>
-              <p className="text-sm text-gray-400 mt-1">
-                Update your rate, services, and bio. Owners see this on your public profile.
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('title')}</h1>
+              <p className="text-sm text-gray-400 mt-1">{t('subtitle')}</p>
             </div>
 
             <SitterProfileForm

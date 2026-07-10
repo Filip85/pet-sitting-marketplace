@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 
 import { updateOwnerProfile } from '@/actions/signup'
 
@@ -18,6 +19,7 @@ interface OwnerProfileFormProps {
 }
 
 export function OwnerProfileForm({ defaultValues, defaultImageUrl }: OwnerProfileFormProps) {
+  const t = useTranslations('Owner.profile')
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -60,13 +62,13 @@ export function OwnerProfileForm({ defaultValues, defaultImageUrl }: OwnerProfil
 
       {saved && (
         <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm text-emerald-700">
-          Profile updated successfully!
+          {t('success')}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t('firstName')}</label>
           <input
             {...register('firstName', { required: 'First name is required' })}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -75,7 +77,7 @@ export function OwnerProfileForm({ defaultValues, defaultImageUrl }: OwnerProfil
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t('lastName')}</label>
           <input
             {...register('lastName', { required: 'Last name is required' })}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -85,26 +87,24 @@ export function OwnerProfileForm({ defaultValues, defaultImageUrl }: OwnerProfil
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t('city')}</label>
         <input
           {...register('city')}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-          placeholder="Your city"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t('bio')}</label>
         <textarea
           {...register('bio')}
           rows={3}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-          placeholder="Tell us about yourself..."
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Profile photo (optional)</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t('photo')}</label>
         <input
           type="file"
           accept="image/*"
@@ -123,7 +123,7 @@ export function OwnerProfileForm({ defaultValues, defaultImageUrl }: OwnerProfil
         disabled={isSubmitting}
         className="w-full py-2.5 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors"
       >
-        {isSubmitting ? 'Saving...' : 'Save profile'}
+        {isSubmitting ? t('saving') : t('save')}
       </button>
     </form>
   )

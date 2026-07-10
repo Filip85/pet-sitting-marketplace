@@ -1,26 +1,29 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 
 type GoogleAuthButtonProps = {
   mode: 'login' | 'signup'
+  role?: 'OWNER' | 'SITTER'
 }
 
-export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
+export function GoogleAuthButton({ mode, role = 'OWNER' }: GoogleAuthButtonProps) {
+  const t = useTranslations('Auth.google')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const cta = mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'
+  const cta = mode === 'signup' ? t('signup') : t('login')
 
   const onGoogleAuth = async () => {
     setError(null)
     setIsLoading(true)
 
     const supabase = createClient()
-    const redirectTo = `${window.location.origin}/api/auth/callback`
+    const redirectTo = `${window.location.origin}/api/auth/callback?role=${role}`
 
     const { data, error: signInError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -60,7 +63,7 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
           </svg>
         </span>
       </Button>
-      <p className="text-sm text-gray-600 text-center">{isLoading ? 'Redirecting to Google...' : cta}</p>
+      <p className="text-sm text-gray-600 text-center">{isLoading ? t('redirecting') : cta}</p>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   )

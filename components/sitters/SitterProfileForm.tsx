@@ -5,6 +5,7 @@ import type { ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslations } from 'next-intl'
 
 import { sitterProfileSchema, type SitterProfileForm as FormType } from '@/lib/validations/sitter-profile'
 import { SITTER_SERVICES } from '@/lib/constants/services'
@@ -16,6 +17,8 @@ interface SitterProfileFormProps {
 }
 
 export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProfileFormProps) {
+  const t = useTranslations('Sitter.profile')
+  const tSvc = useTranslations('ServiceLabels')
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -67,14 +70,14 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
 
       {saved && (
         <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm text-emerald-700">
-          Profile updated successfully!
+          {t('success')}
         </div>
       )}
 
       {/* Price per day */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          Price per day ($) <span className="text-red-500">*</span>
+          {t('pricePerDay')} <span className="text-red-500">{t('required')}</span>
         </label>
         <input
           {...register('pricePerDay', { valueAsNumber: true })}
@@ -92,7 +95,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
       {/* Years of experience */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          Years of experience <span className="text-gray-400 font-normal">(optional)</span>
+          {t('yearsExp')} <span className="text-gray-400 font-normal">{t('optional')}</span>
         </label>
         <input
           {...register('yearsOfExperience', {
@@ -111,7 +114,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
       {/* Services */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Services you offer
+          {t('services')}
         </label>
         <Controller
           name="services"
@@ -144,7 +147,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
                       {service.icon}
                     </span>
                     <span className="text-sm font-medium text-gray-700">
-                      {service.label}
+                      {tSvc(service.id)}
                     </span>
                     {checked && (
                       <svg
@@ -175,8 +178,8 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
             className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <span>
-            <span className="block text-sm font-medium text-gray-800">Offer pet hotel / boarding at my home</span>
-            <span className="block text-xs text-gray-500">Owners will see this on your public profile.</span>
+            <span className="block text-sm font-medium text-gray-800">{t('petHotel')}</span>
+            <span className="block text-xs text-gray-500">{t('petHotelDesc')}</span>
           </span>
         </label>
       </div>
@@ -184,7 +187,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
       {/* City */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          City <span className="text-gray-400 font-normal">(optional)</span>
+          {t('city')} <span className="text-gray-400 font-normal">{t('optional')}</span>
         </label>
         <input
           {...register('city')}
@@ -200,7 +203,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
       {/* Bio */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          Bio <span className="text-gray-400 font-normal">(optional)</span>
+          {t('bio')} <span className="text-gray-400 font-normal">{t('optional')}</span>
         </label>
         <textarea
           {...register('bio')}
@@ -216,7 +219,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
       {/* Profile photo */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          Profile photo <span className="text-gray-400 font-normal">(optional)</span>
+          {t('photo')} <span className="text-gray-400 font-normal">{t('optional')}</span>
         </label>
         <input
           type="file"
@@ -237,7 +240,7 @@ export function SitterProfileForm({ defaultValues, defaultImageUrl }: SitterProf
         disabled={isSubmitting}
         className="w-full py-2.5 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors"
       >
-        {isSubmitting ? 'Saving...' : 'Save profile'}
+        {isSubmitting ? t('saving') : t('save')}
       </button>
     </form>
   )

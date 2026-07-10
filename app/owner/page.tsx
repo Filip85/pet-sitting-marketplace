@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 import { requireRole } from '@/lib/supabase/protected'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -11,7 +12,7 @@ import type { Pet, Profile } from '@/types'
 export const dynamic = 'force-dynamic'
 
 export default async function OwnerPage() {
-  const { user } = await requireRole('OWNER')
+  const [{ user }, t] = await Promise.all([requireRole('OWNER'), getTranslations('Owner.dashboard')])
   const db = createAdminClient()
 
   // Fetch pets + bookings in parallel
@@ -50,22 +51,22 @@ export default async function OwnerPage() {
   return (
     <PageContainer className="py-10 sm:py-12">
       <div className="rounded-3xl bg-gradient-to-br from-sky-50 via-indigo-50 to-white border border-indigo-100 p-8 sm:p-10 mb-10 shadow-sm">
-        <PageHeader title="Owner Dashboard" subtitle="Pets and bookings in one place." />
+        <PageHeader title={t('title')} subtitle={t('subtitle')} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
           <div className="flex items-end justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">My pets</h2>
-              <p className="text-sm text-gray-400">{petList.length} total</p>
+              <h2 className="text-lg font-semibold text-gray-900">{t('myPets')}</h2>
+              <p className="text-sm text-gray-400">{t('total', { count: petList.length })}</p>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/owner/profile" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Edit profile
+                {t('editProfile')}
               </Link>
               <Link href="/owner/pets" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                View all
+                {t('viewAll')}
               </Link>
             </div>
           </div>
@@ -75,8 +76,8 @@ export default async function OwnerPage() {
         <section className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
           <div className="flex items-end justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">My bookings</h2>
-              <p className="text-sm text-gray-400">{bookingItems.length} total</p>
+              <h2 className="text-lg font-semibold text-gray-900">{t('myBookings')}</h2>
+              <p className="text-sm text-gray-400">{t('total', { count: bookingItems.length })}</p>
             </div>
     </div>
           <OwnerBookingsList bookings={bookingItems} showCta={false} />

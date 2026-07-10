@@ -13,7 +13,6 @@ async function updateBookingStatus(
   const { user } = await requireRole('SITTER')
   const db = createAdminClient()
 
-  // Verify booking belongs to this sitter and is still pending
   const { data: booking } = await db
     .from('bookings')
     .select('id, sitter_id, status')

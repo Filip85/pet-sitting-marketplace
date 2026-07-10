@@ -1,65 +1,26 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Footer } from '../components/layout/Footer'
 
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-const STEPS = [
-  {
-    number: '01',
-    title: 'Browse sitters',
-    description:
-      'Search profiles by city and price. Read bios and pick the sitter that feels right for your pet.',
-  },
-  {
-    number: '02',
-    title: 'Request a booking',
-    description:
-      'Choose your dates and send a request. Your sitter reviews and responds.',
-  },
-  {
-    number: '03',
-    title: 'Relax',
-    description:
-      'Once accepted, you’re all set. Your pet gets loving care while you’re away.',
-  },
+const FEATURE_META = [
+  { icon: '✨', accent: 'from-blue-600 to-indigo-600', titleKey: 'features.simpleTitle' as const, descKey: 'features.simpleDesc' as const },
+  { icon: '🛡️', accent: 'from-emerald-600 to-teal-600', titleKey: 'features.trustedTitle' as const, descKey: 'features.trustedDesc' as const },
+  { icon: '💌', accent: 'from-fuchsia-600 to-pink-600', titleKey: 'features.requestTitle' as const, descKey: 'features.requestDesc' as const },
 ]
 
-const FEATURES = [
-  {
-    icon: '✨',
-    title: 'Simple & transparent',
-    description:
-      'Clear daily rates, easy date selection, and upfront totals — no surprises.',
-    accent: 'from-blue-600 to-indigo-600',
-  },
-  {
-    icon: '🛡️',
-    title: 'Trusted profiles',
-    description:
-      'Sitters share experience, services, and a bio so you can book confidently.',
-    accent: 'from-emerald-600 to-teal-600',
-  },
-  {
-    icon: '💌',
-    title: 'Request → confirm',
-    description:
-      'Send a request and get a clear ACCEPTED / REJECTED response in your dashboard.',
-    accent: 'from-fuchsia-600 to-pink-600',
-  },
-]
-
-const STATS = [
-  { value: '200+', label: 'Sitters' },
-  { value: '500+', label: 'Happy pets' },
-  { value: '4.9★', label: 'Avg. rating' },
+const STEP_META = [
+  { number: '01', titleKey: 'steps.step1Title' as const, descKey: 'steps.step1Desc' as const },
+  { number: '02', titleKey: 'steps.step2Title' as const, descKey: 'steps.step2Desc' as const },
+  { number: '03', titleKey: 'steps.step3Title' as const, descKey: 'steps.step3Desc' as const },
 ]
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations('Home')
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <AppNavbar />
@@ -75,20 +36,19 @@ export default function HomePage() {
               <div>
                 <div className="inline-flex items-center gap-2 bg-white/70 border border-white rounded-2xl px-4 py-2 text-xs font-semibold tracking-wide text-gray-700 shadow-sm">
                   <span className="text-base" aria-hidden>🐶</span>
-                  Pet-sitting marketplace
+                  {t('hero.badge')}
                 </div>
 
                 <h1 className="mt-6 text-5xl sm:text-6xl font-extrabold text-gray-900 leading-[1.05] tracking-tight">
-                  Happy pets.
+                  {t('hero.title1')}
                   <br />
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                    Stress-free trips.
+                    {t('hero.title2')}
                   </span>
                 </h1>
 
                 <p className="mt-5 text-lg text-gray-600 leading-relaxed max-w-xl">
-                  Find trusted local sitters who treat your pet like family.
-                  Request a booking in minutes and track status from your dashboard.
+                  {t('hero.subtitle')}
                 </p>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -96,20 +56,24 @@ export default function HomePage() {
                     href="/sitters"
                     className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-sm px-7 py-3.5 rounded-2xl transition-colors shadow-sm shadow-blue-200"
                   >
-                    Find a sitter
+                    {t('hero.findSitter')}
                     <span aria-hidden>→</span>
                   </Link>
                   <Link
                     href="/register"
                     className="inline-flex items-center justify-center bg-white/80 hover:bg-white text-gray-900 font-semibold text-sm px-7 py-3.5 rounded-2xl border border-gray-200 transition-colors"
                   >
-                    Become a sitter
+                    {t('hero.becomeSitter')}
                   </Link>
                 </div>
 
                 <div className="mt-10 flex items-center gap-6 sm:gap-10">
-                  {STATS.map((stat) => (
-                    <div key={stat.label}>
+                  {[
+                    { value: '200+', label: t('hero.statSitters') },
+                    { value: '500+', label: t('hero.statHappyPets') },
+                    { value: '4.9★', label: t('hero.statRating') },
+                  ].map((stat) => (
+                    <div key={stat.label} className="hover:scale-110 transition-transform duration-200 cursor-default">
                       <p className="text-2xl font-extrabold text-gray-900">{stat.value}</p>
                       <p className="text-sm text-gray-500 mt-0.5">{stat.label}</p>
                     </div>
@@ -119,41 +83,39 @@ export default function HomePage() {
 
               {/* Right hero card */}
               <div className="lg:justify-self-end">
-                <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8 sm:p-10">
+                <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8 sm:p-10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-900">Booking preview</p>
-                    <span className="text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full">
-                      PENDING
+                    <p className="text-sm font-semibold text-gray-900">{t('hero.bookingTitle')}</p>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      {t('hero.bookingStatus')}
                     </span>
                   </div>
 
                   <div className="mt-6 space-y-4">
                     <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4">
-                      <p className="text-xs text-gray-500">Pet</p>
+                      <p className="text-xs text-gray-500">{t('hero.bookingPet')}</p>
                       <p className="font-semibold text-gray-900">🐾 Buddy (Dog)</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4">
-                        <p className="text-xs text-gray-500">Start</p>
+                        <p className="text-xs text-gray-500">{t('hero.bookingStart')}</p>
                         <p className="font-semibold text-gray-900">Jun 20</p>
                       </div>
                       <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4">
-                        <p className="text-xs text-gray-500">End</p>
+                        <p className="text-xs text-gray-500">{t('hero.bookingEnd')}</p>
                         <p className="font-semibold text-gray-900">Jun 23</p>
                       </div>
                     </div>
 
                     <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
-                      <p className="text-xs text-blue-100">Total</p>
+                      <p className="text-xs text-blue-100">{t('hero.bookingTotal')}</p>
                       <p className="text-2xl font-extrabold">$240</p>
-                      <p className="text-xs text-blue-100 mt-1">Calculated automatically from sitter rate</p>
                     </div>
                   </div>
 
-                  <p className="mt-6 text-xs text-gray-500">
-                    This is just an example — real totals depend on sitter rate and dates.
-                  </p>
+                  <p className="mt-6 text-xs text-gray-500">{t('hero.bookingNote')}</p>
                 </div>
               </div>
             </div>
@@ -165,27 +127,27 @@ export default function HomePage() {
           <PageContainer>
             <div className="text-center mb-12">
               <p className="text-xs font-semibold tracking-widest uppercase text-blue-600 mb-3">
-                Why PetCare
+                {t('features.badge')}
               </p>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                Everything you need, nothing you don’t
+                {t('features.title')}
               </h2>
               <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
-                A clean MVP experience focused on browsing, requesting, and managing bookings.
+                {t('features.subtitle')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {FEATURES.map((f) => (
+              {FEATURE_META.map((f) => (
                 <div
-                  key={f.title}
-                  className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8"
+                  key={f.titleKey}
+                  className="group rounded-3xl bg-white border border-gray-100 shadow-sm p-8 hover:-translate-y-2 hover:shadow-lg transition-all duration-300 cursor-default"
                 >
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.accent} text-white flex items-center justify-center text-xl font-bold shadow-sm`}>
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.accent} text-white flex items-center justify-center text-xl font-bold shadow-sm group-hover:scale-110 transition-transform duration-300`}>
                     {f.icon}
                   </div>
-                  <h3 className="mt-5 text-lg font-bold text-gray-900">{f.title}</h3>
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{f.description}</p>
+                  <h3 className="mt-5 text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">{t(f.titleKey)}</h3>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{t(f.descKey)}</p>
                 </div>
               ))}
             </div>
@@ -193,28 +155,31 @@ export default function HomePage() {
         </section>
 
         {/* Steps */}
-        <section className="bg-gradient-to-b from-gray-50 to-white py-14 sm:py-20">
-          <PageContainer>
+        <section className="relative py-14 sm:py-24 overflow-hidden">
+          <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" src="/steps-bg.mp4" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+
+          <PageContainer className="relative z-10">
             <div className="text-center mb-12">
-              <p className="text-xs font-semibold tracking-widest uppercase text-blue-600 mb-3">
-                How it works
+              <p className="text-xs font-semibold tracking-widest uppercase text-blue-300 mb-3">
+                {t('steps.badge')}
               </p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                Three easy steps
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                {t('steps.title')}
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {STEPS.map((step) => (
+              {STEP_META.map((step) => (
                 <div
                   key={step.number}
-                  className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8"
+                  className="group rounded-3xl bg-white/10 border border-white/20 backdrop-blur-sm p-8 hover:bg-white/20 hover:border-white/40 hover:-translate-y-2 transition-all duration-300 cursor-default"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white text-sm font-extrabold flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white text-sm font-extrabold flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-400 transition-all duration-300">
                     {step.number}
                   </div>
-                  <h3 className="mt-5 text-lg font-bold text-gray-900">{step.title}</h3>
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                  <h3 className="mt-5 text-lg font-bold text-white">{t(step.titleKey)}</h3>
+                  <p className="mt-2 text-sm text-blue-100 leading-relaxed">{t(step.descKey)}</p>
                 </div>
               ))}
             </div>
@@ -226,10 +191,10 @@ export default function HomePage() {
           <PageContainer>
             <div className="rounded-3xl bg-white/10 border border-white/20 p-8 sm:p-10 text-center">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Ready to meet your pet’s new best friend?
+                {t('cta.title')}
               </h2>
               <p className="text-blue-100 mt-3 max-w-2xl mx-auto">
-                Browse sitters, send a booking request, and manage everything from your dashboard.
+                {t('cta.subtitle')}
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -237,14 +202,14 @@ export default function HomePage() {
                   href="/sitters"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-700 font-semibold text-sm px-7 py-3.5 rounded-2xl transition-colors"
                 >
-                  Find a sitter
+                  {t('cta.findSitter')}
                   <span aria-hidden>→</span>
                 </Link>
                 <Link
                   href="/register"
                   className="w-full sm:w-auto inline-flex items-center justify-center border border-white/30 hover:bg-white/10 text-white font-semibold text-sm px-7 py-3.5 rounded-2xl transition-colors"
                 >
-                  Become a sitter
+                  {t('cta.becomeSitter')}
                 </Link>
               </div>
             </div>

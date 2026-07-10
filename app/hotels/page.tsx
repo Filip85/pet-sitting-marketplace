@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
 import { PageContainer } from '@/components/layout/PageContainer'
 import { SitterGrid } from '@/components/sitters/SitterGrid'
@@ -46,11 +47,9 @@ interface RawInternalHotelRow {
 
 function normaliseInternalHotels(rows: RawInternalHotelRow[]): SitterWithProfile[] {
   const hotels: SitterWithProfile[] = []
-
   for (const row of rows) {
     const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile
     if (!profile) continue
-
     hotels.push({
       ...row,
       years_of_experience: row.years_of_experience ?? undefined,
@@ -58,7 +57,6 @@ function normaliseInternalHotels(rows: RawInternalHotelRow[]): SitterWithProfile
       profile,
     })
   }
-
   return hotels
 }
 
@@ -70,13 +68,8 @@ async function fetchRegisteredHotels(city: string): Promise<SitterWithProfile[]>
       .from('sitter_profiles')
       .select(
         `
-          id,
-          profile_id,
-          price_per_day,
-          years_of_experience,
-          services_offered,
-          can_host_at_home,
-          created_at,
+          id, profile_id, price_per_day, years_of_experience,
+          services_offered, can_host_at_home, created_at,
           profile:profiles ( first_name, last_name, city, bio, image_url )
         `,
         { count: 'exact' }
@@ -102,9 +95,7 @@ async function fetchRegisteredHotels(city: string): Promise<SitterWithProfile[]>
     error = fallbackResult.error
   }
 
-  if (error) {
-    throw error
-  }
+  if (error) throw error
 
   return normaliseInternalHotels((data as RawInternalHotelRow[]) ?? [])
 }
@@ -114,12 +105,11 @@ export default async function HotelsPage({
 }: {
   searchParams?: Promise<{ city?: string; source?: string }>
 }) {
-  const params = await searchParams
+  const [params, t] = await Promise.all([searchParams, getTranslations('Hotels')])
   const city = params?.city?.trim() ?? ''
   const source = parseSource(params?.source)
 
   let externalHotels: Awaited<ReturnType<typeof fetchExternalPetHotelsByCityDetailed>>['items'] = []
-  let externalDebug: Awaited<ReturnType<typeof fetchExternalPetHotelsByCityDetailed>>['debug'] | null = null
   let externalError: string | null = null
   let internalHotels: SitterWithProfile[] = []
   let internalError: string | null = null
@@ -129,24 +119,23 @@ export default async function HotelsPage({
       try {
         const externalResult = await fetchExternalPetHotelsByCityDetailed(city)
         externalHotels = externalResult.items
-        externalDebug = externalResult.debug
       } catch {
-        externalError = 'External provider is temporarily unavailable. Please try again.'
+        externalError = t('providerUnavailable')
       }
     }
   } else {
     try {
       internalHotels = await fetchRegisteredHotels(city)
     } catch {
-      internalError = 'Registered hotels are temporarily unavailable. Please try again.'
+      internalError = t('internalError')
     }
   }
 
   return (
     <PageContainer className="py-10 sm:py-12">
       <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-cyan-50 to-white border border-emerald-100 p-8 sm:p-10 mb-8 shadow-sm">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Pet Hotels</h1>
-        <p className="text-sm text-gray-500 mt-2">Switch between registered hotels and external Internet listings.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{t('title')}</h1>
+        <p className="text-sm text-gray-500 mt-2">{t('subtitle')}</p>
       </div>
 
       <div className="mb-6 inline-flex rounded-2xl border border-gray-200 bg-white p-1 shadow-sm">
@@ -159,7 +148,7 @@ export default async function HotelsPage({
               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
           }`}
         >
-          External hotels
+          {t('tabExternal')}
         </a>
         <a
           href={buildTabHref('internal', city)}
@@ -170,7 +159,7 @@ export default async function HotelsPage({
               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
           }`}
         >
-          Registered hotels
+          {t('tabInternal')}
         </a>
       </div>
 
@@ -179,7 +168,7 @@ export default async function HotelsPage({
         <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
           <div className="flex-1">
             <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-              Search city
+              {t('searchCity')}
             </label>
             <input
               id="city"
@@ -194,13 +183,13 @@ export default async function HotelsPage({
               type="submit"
               className="inline-flex items-center justify-center text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 rounded-xl transition-colors"
             >
-              Search
+              {t('search')}
             </button>
             <a
               href={buildTabHref(source, '')}
               className="inline-flex items-center justify-center text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2.5 rounded-xl transition-colors"
             >
-              Reset
+              {t('reset')}
             </a>
           </div>
         </div>
@@ -209,79 +198,76 @@ export default async function HotelsPage({
       {source === 'external' ? (
         <>
           <div className="mb-5 text-sm text-gray-500">
-            {externalHotels.length} {externalHotels.length === 1 ? 'internet hotel' : 'internet hotels'} found
+            {t('externalCount', { count: externalHotels.length })}
           </div>
 
           {!city ? (
             <div className="rounded-3xl bg-white border border-gray-100 px-6 py-10 text-center">
-              <p className="text-gray-700 font-semibold mb-1">Enter a city to load Internet hotels.</p>
-              <p className="text-gray-500 text-sm">This view shows only external pet-hotel listings.</p>
+              <p className="text-gray-700 font-semibold mb-1">{t('enterCity')}</p>
+              <p className="text-gray-500 text-sm">{t('enterCityDesc')}</p>
             </div>
           ) : externalError ? (
             <div className="rounded-3xl bg-red-50 border border-red-100 px-6 py-10 text-center">
-              <p className="text-red-700 font-semibold mb-1">Could not load Internet hotels.</p>
+              <p className="text-red-700 font-semibold mb-1">{t('externalError')}</p>
               <p className="text-red-500 text-sm">{externalError}</p>
             </div>
           ) : externalHotels.length === 0 ? (
             <div className="rounded-3xl bg-white border border-gray-100 px-6 py-10 text-center">
-              <p className="text-gray-700 font-semibold mb-1">No Internet hotels found for that city.</p>
-              <p className="text-gray-500 text-sm">Try another city name.</p>
+              <p className="text-gray-700 font-semibold mb-1">{t('noExternal')}</p>
+              <p className="text-gray-500 text-sm">{t('noExternalDesc')}</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <ul className="grid grid-cols-1 lg:grid-cols-2 gap-5" aria-label="External pet hotels">
-                {externalHotels.map((hotel: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; address: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; sourceUrl: string | undefined; lat: number; lon: number }) => (
-                  <li key={hotel.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                    <div className="mb-3">
-                      <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-1 mb-2">
-                        Internet listing
-                      </span>
-                      <h2 className="text-lg font-bold text-gray-900">{hotel.name}</h2>
-                      <p className="text-sm text-gray-600 mt-1">{hotel.address}</p>
-                      <a
-                        href={hotel.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex mt-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
-                      >
-                        Open in Google Maps
-                      </a>
-                    </div>
-
-                    <iframe
-                      title={`Map for ${hotel.name}`}
-                      src={buildEmbedMapUrl(hotel.lat, hotel.lon)}
-                      className="w-full h-56 rounded-xl border border-gray-200"
-                      loading="lazy"
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="grid grid-cols-1 lg:grid-cols-2 gap-5" aria-label="External pet hotels">
+              {externalHotels.map((hotel: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; address: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; sourceUrl: string | undefined; lat: number; lon: number }) => (
+                <li key={hotel.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <div className="mb-3">
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-1 mb-2">
+                      {t('externalBadge')}
+                    </span>
+                    <h2 className="text-lg font-bold text-gray-900">{hotel.name}</h2>
+                    <p className="text-sm text-gray-600 mt-1">{hotel.address}</p>
+                    <a
+                      href={hotel.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex mt-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+                    >
+                      {t('openMaps')}
+                    </a>
+                  </div>
+                  <iframe
+                    title={`Map for ${hotel.name}`}
+                    src={buildEmbedMapUrl(hotel.lat, hotel.lon)}
+                    className="w-full h-56 rounded-xl border border-gray-200"
+                    loading="lazy"
+                  />
+                </li>
+              ))}
+            </ul>
           )}
         </>
       ) : internalError ? (
         <div className="rounded-3xl bg-red-50 border border-red-100 px-6 py-10 text-center">
-          <p className="text-red-700 font-semibold mb-1">Could not load registered hotels.</p>
+          <p className="text-red-700 font-semibold mb-1">{t('internalError')}</p>
           <p className="text-red-500 text-sm">{internalError}</p>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="mb-5 text-sm text-gray-500">
-            {internalHotels.length} {internalHotels.length === 1 ? 'registered hotel' : 'registered hotels'} found
+            {t('internalCount', { count: internalHotels.length })}
           </div>
 
           {city ? (
             <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              Showing registered pet hotels for {city}.
+              {t('showingCity', { city })}
             </div>
           ) : null}
 
           <SitterGrid
             sitters={internalHotels}
-            cardBadgeLabel="Registered hotel"
-            emptyTitle="No registered hotels available yet"
-            emptyMessage={city ? 'Try another city name or switch back to external hotels.' : 'Add a city to filter registered hotels, or switch to external listings.'}
+            cardBadgeLabel={t('tabInternal')}
+            emptyTitle={t('noRegistered')}
+            emptyMessage={city ? t('tryCityFilter') : t('addCityFilter')}
           />
         </div>
       )}

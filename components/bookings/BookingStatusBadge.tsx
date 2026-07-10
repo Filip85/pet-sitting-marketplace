@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import type { BookingStatus } from '@/types'
 
 const STYLES: Record<BookingStatus, string> = {
@@ -6,12 +7,17 @@ const STYLES: Record<BookingStatus, string> = {
   REJECTED: 'bg-red-50 text-red-700 border-red-100',
 }
 
-export function BookingStatusBadge({ status }: { status: BookingStatus }) {
+const STATUS_KEY: Record<BookingStatus, 'statusPending' | 'statusAccepted' | 'statusRejected'> = {
+  PENDING: 'statusPending',
+  ACCEPTED: 'statusAccepted',
+  REJECTED: 'statusRejected',
+}
+
+export async function BookingStatusBadge({ status }: { status: BookingStatus }) {
+  const t = await getTranslations('Bookings')
   return (
-    <span
-      className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold border ${STYLES[status]}`}
-    >
-      {status}
+    <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold border ${STYLES[status]}`}>
+      {t(STATUS_KEY[status])}
     </span>
   )
 }

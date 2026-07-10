@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 import { requireRole } from '@/lib/supabase/protected'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -8,7 +9,7 @@ import { createPet } from '@/actions/pets'
 export const dynamic = 'force-dynamic'
 
 export default async function NewPetPage() {
-  await requireRole('OWNER')
+  const [, t] = await Promise.all([requireRole('OWNER'), getTranslations('Pets')])
 
   return (
     <PageContainer className="py-10 sm:py-12">
@@ -17,15 +18,15 @@ export default async function NewPetPage() {
         className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6"
       >
         <span aria-hidden>←</span>
-        Back to my pets
+        {t('newBack')}
       </Link>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 sm:p-10 max-w-xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Add a pet</h1>
-          <p className="text-sm text-gray-400 mt-1">Fill in your pet&apos;s details below.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('newTitle')}</h1>
+          <p className="text-sm text-gray-400 mt-1">{t('newDesc')}</p>
         </div>
-        <PetForm action={createPet} submitLabel="Add Pet" />
+        <PetForm action={createPet} submitLabel={t('newSubmit')} />
       </div>
     </PageContainer>
   )
